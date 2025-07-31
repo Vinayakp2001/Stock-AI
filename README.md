@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 # Stock-AI
+=======
+>>>>>>> b8343013 (Initial commit)
 # Stock Prediction Agent SDK
 
 A comprehensive stock prediction and backtesting system that helps you analyze trading strategies and test their profitability before risking real money.
@@ -122,4 +125,8 @@ print(f"Signal: {prediction.signal}")
 
 ## License
 
+<<<<<<< HEAD
 MIT License - see LICENSE file for details 
+=======
+MIT License - see LICENSE file for details 
+>>>>>>> b8343013 (Initial commit)
