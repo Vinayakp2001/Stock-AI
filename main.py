@@ -33,8 +33,16 @@ class StockPredictionApp:
         self.prediction_agent = PredictionAgent()
         self.backtest_engine = BacktestEngine(initial_capital=100000)
         
-        # Default symbols to analyze
-        self.default_symbols = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN']
+        # Default symbols to analyze (including Indian stocks)
+        self.default_symbols = [
+            # US Stocks
+            'AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'NFLX',
+            # Indian Stocks
+            'RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS',
+            'HINDUNILVR.NS', 'ITC.NS', 'SBIN.NS', 'BHARTIARTL.NS', 'AXISBANK.NS',
+            # Market Indices
+            '^NSEI', '^BSESN', '^GSPC', '^IXIC', '^DJI'
+        ]
     
     def analyze_stock(self, symbol: str, period: str = "1y", show_indicators: bool = False):
         """Analyze a single stock"""
@@ -222,19 +230,19 @@ class StockPredictionApp:
         print("🚀 STOCK PREDICTION AGENT SDK - DEMO")
         print("=" * 60)
         
-        # Analyze a popular stock
-        symbol = "AAPL"
+        # Analyze a popular Indian stock
+        symbol = "RELIANCE.NS"
         print(f"\n1️⃣ Analyzing {symbol}...")
-        stock_data, prediction = self.analyze_stock(symbol, period="6mo", show_indicators=True)
+        stock_data, prediction = self.analyze_stock(symbol, period="1y", show_indicators=True)
         
         if stock_data and prediction:
             # Backtest strategies
             print(f"\n2️⃣ Backtesting strategies on {symbol}...")
             backtest_results = self.backtest_strategies(symbol, period="1y")
             
-            # Compare multiple stocks
+            # Compare multiple stocks (mix of US and Indian)
             print(f"\n3️⃣ Comparing multiple stocks...")
-            comparison_results = self.compare_stocks(['AAPL', 'GOOGL', 'MSFT', 'TSLA'], period="6mo")
+            comparison_results = self.compare_stocks(['RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'AAPL'], period="1y")
             
             print(f"\n✅ Demo completed successfully!")
             print(f"📈 You can now use these results to make informed trading decisions.")

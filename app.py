@@ -4,7 +4,7 @@ Interactive dashboard for stock prediction and backtesting results
 """
 
 import dash
-from dash import dcc, html, Input, Output, callback
+from dash import dcc, html, Input, Output, callback, State
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 import plotly.express as px
@@ -14,6 +14,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import sys
 import os
+import json
 
 # Add the project root to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,6 +35,22 @@ backtest_engine = BacktestEngine(initial_capital=100000)
 # Popular stocks for quick selection
 POPULAR_STOCKS = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'AMZN', 'NVDA', 'META', 'NFLX']
 
+# Indian stocks
+INDIAN_STOCKS = [
+    'RELIANCE.NS', 'TCS.NS', 'INFY.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 
+    'HINDUNILVR.NS', 'ITC.NS', 'SBIN.NS', 'BHARTIARTL.NS', 'AXISBANK.NS',
+    'KOTAKBANK.NS', 'ASIANPAINT.NS', 'MARUTI.NS', 'SUNPHARMA.NS', 'TATAMOTORS.NS'
+]
+
+# Market indices
+MARKET_INDICES = ['^NSEI', '^BSESN', '^GSPC', '^IXIC', '^DJI']
+
+# User's custom stock list (will be stored in session)
+user_stocks = []
+
+# All available stocks
+ALL_STOCKS = POPULAR_STOCKS + INDIAN_STOCKS + MARKET_INDICES
+
 # App layout
 app.layout = dbc.Container([
     dbc.Row([
@@ -42,6 +59,40 @@ app.layout = dbc.Container([
             html.Hr()
         ])
     ]),
+    
+    # Stock management section
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.H5("Add Custom Stock", className="card-title"),
+                    dbc.Row([
+                        dbc.Col([
+                            html.Label("Stock Symbol:"),
+                            dcc.Input(
+                                id='stock-input',
+                                type='text',
+                                placeholder='Enter stock symbol (e.g., RELIANCE.NS)',
+                                className='form-control'
+                            )
+                        ], width=8),
+                        dbc.Col([
+                            html.Label("&nbsp;"),  # Spacer
+                            dbc.Button("Add Stock", id="add-stock-btn", color="success", className="w-100")
+                        ], width=4)
+                    ], className="mb-3"),
+                    html.Div(id="add-stock-message"),
+                    html.Hr(),
+                    html.H6("Stock Suggestions:"),
+                    html.Div([
+                        dbc.Badge(stock, color="primary", className="me-2 mb-2", 
+                                 style={"cursor": "pointer"}) 
+                        for stock in INDIAN_STOCKS[:10]
+                    ], id="stock-suggestions")
+                ])
+            ])
+        ])
+    ], className="mb-4"),
     
     # Stock selection and controls
     dbc.Row([
@@ -54,7 +105,7 @@ app.layout = dbc.Container([
                             html.Label("Stock Symbol:"),
                             dcc.Dropdown(
                                 id='stock-dropdown',
-                                options=[{'label': symbol, 'value': symbol} for symbol in POPULAR_STOCKS],
+                                options=[{'label': symbol, 'value': symbol} for symbol in ALL_STOCKS],
                                 value='AAPL',
                                 placeholder="Select a stock..."
                             )
@@ -68,9 +119,10 @@ app.layout = dbc.Container([
                                     {'label': '3 Months', 'value': '3mo'},
                                     {'label': '6 Months', 'value': '6mo'},
                                     {'label': '1 Year', 'value': '1y'},
-                                    {'label': '2 Years', 'value': '2y'}
+                                    {'label': '2 Years', 'value': '2y'},
+                                    {'label': '5 Years', 'value': '5y'}
                                 ],
-                                value='6mo'
+                                value='1y'
                             )
                         ], width=4),
                         dbc.Col([
@@ -110,6 +162,54 @@ app.layout = dbc.Container([
         ])
     ])
 ], fluid=True)
+
+# Callback to add custom stock
+@app.callback(
+    Output("add-stock-message", "children"),
+    Output("stock-dropdown", "options"),
+    Input("add-stock-btn", "n_clicks"),
+    State("stock-input", "value"),
+    prevent_initial_call=True
+)
+def add_custom_stock(n_clicks, stock_symbol):
+    if not stock_symbol:
+        return dbc.Alert("Please enter a stock symbol", color="warning"), dash.no_update
+    
+    stock_symbol = stock_symbol.upper().strip()
+    
+    try:
+        # Test if stock exists by fetching a small amount of data
+        test_data = data_agent.get_stock_data(stock_symbol, period="1mo")
+        
+        if test_data and not test_data.data.empty:
+            # Add to global list
+            if stock_symbol not in ALL_STOCKS:
+                ALL_STOCKS.append(stock_symbol)
+            
+            # Update dropdown options
+            options = [{'label': symbol, 'value': symbol} for symbol in ALL_STOCKS]
+            
+            return dbc.Alert(f"✅ Successfully added {stock_symbol}!", color="success"), options
+        else:
+            return dbc.Alert(f"❌ Could not fetch data for {stock_symbol}. Please check the symbol.", color="danger"), dash.no_update
+            
+    except Exception as e:
+        return dbc.Alert(f"❌ Error adding {stock_symbol}: {str(e)}", color="danger"), dash.no_update
+
+# Callback to handle stock suggestion clicks
+@app.callback(
+    Output("stock-input", "value"),
+    Input("stock-suggestions", "children"),
+    prevent_initial_call=True
+)
+def handle_stock_suggestion_click(children):
+    # This will be triggered when a suggestion badge is clicked
+    ctx = dash.callback_context
+    if ctx.triggered:
+        # Extract stock symbol from clicked badge
+        # For now, we'll just return the first suggestion
+        return INDIAN_STOCKS[0] if INDIAN_STOCKS else ""
+    return ""
 
 @app.callback(
     Output("results-container", "children"),
