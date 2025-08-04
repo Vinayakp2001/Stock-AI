@@ -56,19 +56,23 @@ class StockPredictionApp:
             stock_data = self.data_agent.get_stock_data(symbol, period=period)
             
             current_price = stock_data.data['Close'].iloc[-1]
-            print(f"💰 Current Price: ${current_price:.2f}")
+            
+            # Determine currency symbol
+            currency_symbol = "₹" if ".NS" in symbol or ".BO" in symbol else "$"
+            
+            print(f"💰 Current Price: {currency_symbol}{current_price:.2f}")
             
             # Show metadata
             if stock_data.metadata:
                 print(f"🏢 Company: {stock_data.metadata.get('name', 'Unknown')}")
                 print(f"📈 Sector: {stock_data.metadata.get('sector', 'Unknown')}")
-                print(f"📊 Market Cap: ${stock_data.metadata.get('market_cap', 0):,.0f}")
+                print(f"📊 Market Cap: {currency_symbol}{stock_data.metadata.get('market_cap', 0):,.0f}")
                 print(f"📉 P/E Ratio: {stock_data.metadata.get('pe_ratio', 0):.2f}")
             
             # Calculate support/resistance
             levels = self.data_agent.get_support_resistance(stock_data)
-            print(f"🛡️  Support Level: ${levels['support']:.2f}")
-            print(f"🚀 Resistance Level: ${levels['resistance']:.2f}")
+            print(f"🛡️  Support Level: {currency_symbol}{levels['support']:.2f}")
+            print(f"🚀 Resistance Level: {currency_symbol}{levels['resistance']:.2f}")
             
             # Show technical indicators
             if show_indicators:
@@ -82,9 +86,9 @@ class StockPredictionApp:
                     elif 'macd' in name and 'signal' not in name and 'histogram' not in name:
                         print(f"   MACD: {value:.4f}")
                     elif 'sma_20' in name:
-                        print(f"   SMA 20: ${value:.2f}")
+                        print(f"   SMA 20: {currency_symbol}{value:.2f}")
                     elif 'sma_50' in name:
-                        print(f"   SMA 50: ${value:.2f}")
+                        print(f"   SMA 50: {currency_symbol}{value:.2f}")
             
             # Prepare data for ML
             print("\n🤖 Preparing data for machine learning...")
@@ -95,26 +99,36 @@ class StockPredictionApp:
                 logger.error("Not enough data for training. X or y is empty or too small.")
                 return None, None
             
-            # Train models
+            # Train models and get multiple timeframe predictions
             print("🧠 Training prediction models...")
-            self.prediction_agent.train_models(X, y, symbol)
+            multi_prediction = self.prediction_agent.predict_multiple_timeframes(X, symbol)
             
-            # Make prediction
-            print("🔮 Making price prediction...")
-            latest_features = X.tail(1)
-            prediction = self.prediction_agent.predict(latest_features, symbol)
+            # Display enhanced prediction results
+            print(f"\n🎯 MULTI-TIMEFRAME PREDICTION RESULTS:")
+            print(f"   Overall Signal: {multi_prediction.overall_signal}")
+            print(f"   Overall Confidence: {multi_prediction.overall_confidence:.2%}")
+            print(f"   Risk-Adjusted Return: {multi_prediction.risk_metrics['avg_risk_adjusted_return']:.3f}")
+            print(f"   Signal Consistency: {multi_prediction.risk_metrics['signal_consistency']}")
             
-            print(f"\n🎯 PREDICTION RESULTS:")
-            print(f"   Predicted Price: ${prediction.predicted_price:.2f}")
-            print(f"   Confidence: {prediction.confidence:.2%}")
-            print(f"   Signal: {prediction.signal}")
-            print(f"   Model Used: {prediction.model_name}")
+            print(f"\n📅 Timeframe Predictions:")
+            for timeframe, prediction in multi_prediction.predictions.items():
+                timeframe_name = {"1d": "1 Day", "1w": "1 Week", "1m": "1 Month"}[timeframe]
+                expected_return = (prediction.predicted_price - current_price) / current_price
+                
+                print(f"   {timeframe_name}:")
+                print(f"     Predicted Price: {currency_symbol}{prediction.predicted_price:.2f}")
+                print(f"     Expected Return: {expected_return:.2%}")
+                print(f"     Confidence: {prediction.confidence:.2%}")
+                print(f"     Signal: {prediction.signal}")
+                print(f"     Risk-Adjusted Return: {prediction.risk_adjusted_return:.3f}")
+                
+                # Show prediction intervals if available
+                if prediction.prediction_intervals:
+                    intervals = prediction.prediction_intervals
+                    print(f"     Price Range (68%): {currency_symbol}{intervals['lower_68']:.2f} - {currency_symbol}{intervals['upper_68']:.2f}")
+                    print(f"     Price Range (95%): {currency_symbol}{intervals['lower_95']:.2f} - {currency_symbol}{intervals['upper_95']:.2f}")
             
-            # Calculate expected return
-            expected_return = (prediction.predicted_price - current_price) / current_price
-            print(f"   Expected Return: {expected_return:.2%}")
-            
-            return stock_data, prediction
+            return stock_data, multi_prediction
             
         except Exception as e:
             logger.error(f"Error analyzing {symbol}: {str(e)}")
@@ -180,7 +194,7 @@ class StockPredictionApp:
             return {}
     
     def compare_stocks(self, symbols: List[str], period: str = "1y"):
-        """Compare multiple stocks"""
+        """Compare multiple stocks with enhanced predictions"""
         print(f"\n{'='*60}")
         print(f"COMPARING STOCKS: {', '.join(symbols)}")
         print(f"{'='*60}")
@@ -192,36 +206,64 @@ class StockPredictionApp:
                 stock_data = self.data_agent.get_stock_data(symbol, period=period)
                 current_price = stock_data.data['Close'].iloc[-1]
                 
+                # Determine currency symbol
+                currency_symbol = "₹" if ".NS" in symbol or ".BO" in symbol else "$"
+                
                 # Prepare data for ML
                 X, y = self.data_agent.prepare_ml_data(stock_data, target_days=1)
                 
-                # Train models
-                self.prediction_agent.train_models(X, y, symbol)
+                if X.empty or y.empty or len(X) < 10:
+                    print(f"⚠️  Skipping {symbol}: Not enough data")
+                    continue
                 
-                # Make prediction
-                latest_features = X.tail(1)
-                prediction = self.prediction_agent.predict(latest_features, symbol)
+                # Get multiple timeframe predictions
+                multi_prediction = self.prediction_agent.predict_multiple_timeframes(X, symbol)
                 
-                results[symbol] = {
-                    'current_price': current_price,
-                    'predicted_price': prediction.predicted_price,
-                    'expected_return': (prediction.predicted_price - current_price) / current_price,
-                    'confidence': prediction.confidence,
-                    'signal': prediction.signal
-                }
+                # Get 1-day prediction for comparison
+                prediction_1d = multi_prediction.predictions.get('1d')
+                if prediction_1d:
+                    expected_return = (prediction_1d.predicted_price - current_price) / current_price
+                    
+                    results[symbol] = {
+                        'current_price': current_price,
+                        'predicted_price': prediction_1d.predicted_price,
+                        'expected_return': expected_return,
+                        'confidence': prediction_1d.confidence,
+                        'signal': prediction_1d.signal,
+                        'overall_signal': multi_prediction.overall_signal,
+                        'risk_adjusted_return': prediction_1d.risk_adjusted_return,
+                        'currency_symbol': currency_symbol
+                    }
                 
             except Exception as e:
                 logger.error(f"Error analyzing {symbol}: {str(e)}")
+                print(f"❌ Error analyzing {symbol}: {str(e)}")
                 continue
         
         # Display comparison
-        print(f"\n📊 STOCK COMPARISON:")
-        print(f"{'Symbol':<8} {'Current':<10} {'Predicted':<10} {'Return':<10} {'Confidence':<12} {'Signal':<6}")
-        print("-" * 60)
+        print(f"\n📊 STOCK COMPARISON RESULTS:")
+        print(f"{'Symbol':<12} {'Current':<12} {'Predicted':<12} {'Return':<10} {'Confidence':<12} {'Signal':<8} {'Risk-Adj':<8}")
+        print("-" * 80)
         
         for symbol, result in results.items():
-            print(f"{symbol:<8} ${result['current_price']:<9.2f} ${result['predicted_price']:<9.2f} "
-                  f"{result['expected_return']:>8.2%} {result['confidence']:>10.2%} {result['signal']:>6}")
+            currency_symbol = result['currency_symbol']
+            print(f"{symbol:<12} {currency_symbol}{result['current_price']:<11.2f} {currency_symbol}{result['predicted_price']:<11.2f} "
+                  f"{result['expected_return']:>8.2%} {result['confidence']:>10.2%} {result['signal']:>6} {result['risk_adjusted_return']:>6.3f}")
+        
+        # Find best performing stock
+        if results:
+            best_stock = max(results.items(), key=lambda x: x[1]['expected_return'])
+            worst_stock = min(results.items(), key=lambda x: x[1]['expected_return'])
+            
+            print(f"\n🏆 BEST PERFORMER: {best_stock[0]}")
+            print(f"   Expected Return: {best_stock[1]['expected_return']:.2%}")
+            print(f"   Signal: {best_stock[1]['signal']}")
+            print(f"   Risk-Adjusted Return: {best_stock[1]['risk_adjusted_return']:.3f}")
+            
+            print(f"\n📉 WORST PERFORMER: {worst_stock[0]}")
+            print(f"   Expected Return: {worst_stock[1]['expected_return']:.2%}")
+            print(f"   Signal: {worst_stock[1]['signal']}")
+            print(f"   Risk-Adjusted Return: {worst_stock[1]['risk_adjusted_return']:.3f}")
         
         return results
     

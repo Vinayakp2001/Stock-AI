@@ -38,6 +38,19 @@ class PredictionResult:
     timestamp: datetime
     features_used: List[str]
     model_performance: Dict[str, float]
+    # New fields for multiple timeframes
+    timeframe: str = "1d"  # '1d', '1w', '1m'
+    prediction_intervals: Dict[str, float] = None  # Confidence intervals
+    risk_adjusted_return: float = None
+
+@dataclass
+class MultiTimeframePrediction:
+    """Container for multiple timeframe predictions"""
+    symbol: str
+    predictions: Dict[str, PredictionResult]  # timeframe -> prediction
+    overall_signal: str
+    overall_confidence: float
+    risk_metrics: Dict[str, float]
 
 class PredictionAgent:
     """Agent responsible for making stock price predictions"""
@@ -53,12 +66,38 @@ class PredictionAgent:
         self._initialize_models()
     
     def _initialize_models(self):
-        """Initialize all prediction models"""
+        """Initialize all prediction models with better hyperparameters"""
         self.models = {
-            'random_forest': RandomForestRegressor(n_estimators=100, random_state=42),
-            'gradient_boosting': GradientBoostingRegressor(n_estimators=100, random_state=42),
-            'xgboost': xgb.XGBRegressor(n_estimators=100, random_state=42),
-            'lightgbm': lgb.LGBMRegressor(n_estimators=100, random_state=42),
+            'random_forest': RandomForestRegressor(
+                n_estimators=200, 
+                max_depth=10, 
+                min_samples_split=5,
+                min_samples_leaf=2,
+                random_state=42
+            ),
+            'gradient_boosting': GradientBoostingRegressor(
+                n_estimators=150, 
+                max_depth=6, 
+                learning_rate=0.1,
+                subsample=0.8,
+                random_state=42
+            ),
+            'xgboost': xgb.XGBRegressor(
+                n_estimators=150, 
+                max_depth=6, 
+                learning_rate=0.1,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                random_state=42
+            ),
+            'lightgbm': lgb.LGBMRegressor(
+                n_estimators=150, 
+                max_depth=6, 
+                learning_rate=0.1,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                random_state=42
+            ),
             'linear_regression': LinearRegression()
         }
         
@@ -68,19 +107,24 @@ class PredictionAgent:
     
     def train_models(self, X: pd.DataFrame, y: pd.Series, symbol: str):
         """
-        Train all prediction models
+        Train all prediction models with improved validation
         
         Args:
             X: Feature matrix
             y: Target variable
             symbol: Stock symbol for model identification
         """
-        logger.info(f"Training models for {symbol}")
+        logger.info(f"Training models for {symbol} with {len(X)} samples")
         
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
+        # Ensure we have enough data
+        if len(X) < 100:
+            logger.warning(f"Insufficient data for training: {len(X)} samples")
+            return
+        
+        # Split data with more recent data for testing
+        split_idx = int(len(X) * 0.8)
+        X_train, X_test = X.iloc[:split_idx], X.iloc[split_idx:]
+        y_train, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
         
         # Train each model
         for model_name, model in self.models.items():
@@ -159,14 +203,19 @@ class PredictionAgent:
             else:
                 X_scaled = X
             
-            # Make prediction
-            predicted_price = self.models[model_name].predict(X_scaled)[0]
+            # Make prediction (this is now a return prediction)
+            predicted_return = self.models[model_name].predict(X_scaled)[0]
+            
+            # Convert return to price prediction
+            # We need to get the current price from the data
+            current_price = self._get_current_price(X, symbol)
+            predicted_price = current_price * (1 + predicted_return)
             
             # Calculate confidence based on model performance
             confidence = self._calculate_confidence(symbol, model_name)
             
             # Generate trading signal
-            signal = self._generate_signal(predicted_price, X, symbol)
+            signal = self._generate_signal(predicted_return, X, symbol)
             
             return PredictionResult(
                 symbol=symbol,
@@ -182,6 +231,166 @@ class PredictionAgent:
         except Exception as e:
             logger.error(f"Error making prediction: {str(e)}")
             raise
+    
+    def predict_multiple_timeframes(self, X: pd.DataFrame, symbol: str) -> MultiTimeframePrediction:
+        """
+        Make predictions for multiple timeframes (1 day, 1 week, 1 month)
+        
+        Args:
+            X: Feature matrix for prediction
+            symbol: Stock symbol
+        
+        Returns:
+            MultiTimeframePrediction object
+        """
+        timeframes = {
+            '1d': 1,
+            '1w': 5,
+            '1m': 21
+        }
+        
+        predictions = {}
+        
+        for timeframe, days in timeframes.items():
+            try:
+                # Prepare data for specific timeframe
+                X_timeframe, y_timeframe = self._prepare_timeframe_data(X, symbol, days)
+                
+                if X_timeframe.empty or y_timeframe.empty or len(X_timeframe) < 10:
+                    continue
+                
+                # Train models for this timeframe
+                self.train_models(X_timeframe, y_timeframe, f"{symbol}_{timeframe}")
+                
+                # Make prediction
+                latest_features = X_timeframe.tail(1)
+                prediction = self.predict(latest_features, f"{symbol}_{timeframe}")
+                
+                # Add timeframe info
+                prediction.timeframe = timeframe
+                prediction.prediction_intervals = self._calculate_prediction_intervals(prediction, X_timeframe)
+                prediction.risk_adjusted_return = self._calculate_risk_adjusted_return(prediction, X_timeframe)
+                
+                predictions[timeframe] = prediction
+                
+            except Exception as e:
+                logger.warning(f"Error predicting {timeframe} for {symbol}: {str(e)}")
+                continue
+        
+        if not predictions:
+            raise ValueError(f"No valid predictions for {symbol}")
+        
+        # Calculate overall metrics
+        overall_signal = self._calculate_overall_signal(predictions)
+        overall_confidence = np.mean([p.confidence for p in predictions.values()])
+        risk_metrics = self._calculate_risk_metrics(predictions)
+        
+        return MultiTimeframePrediction(
+            symbol=symbol,
+            predictions=predictions,
+            overall_signal=overall_signal,
+            overall_confidence=overall_confidence,
+            risk_metrics=risk_metrics
+        )
+    
+    def _prepare_timeframe_data(self, X: pd.DataFrame, symbol: str, target_days: int) -> Tuple[pd.DataFrame, pd.Series]:
+        """Prepare data for specific timeframe prediction"""
+        # This would need to be implemented based on your data structure
+        # For now, we'll use the existing prepare_ml_data method
+        from agents.data_agent import DataAgent
+        data_agent = DataAgent()
+        
+        # Get fresh data for the symbol
+        stock_data = data_agent.get_stock_data(symbol, period="2y")  # Get more data for longer timeframes
+        X_timeframe, y_timeframe = data_agent.prepare_ml_data(stock_data, target_days=target_days)
+        
+        return X_timeframe, y_timeframe
+    
+    def _calculate_prediction_intervals(self, prediction: PredictionResult, X: pd.DataFrame) -> Dict[str, float]:
+        """Calculate prediction confidence intervals"""
+        # Simple confidence intervals based on model performance
+        confidence_level = prediction.confidence
+        
+        # Calculate standard deviation of recent predictions
+        if hasattr(self, 'models') and prediction.model_name in self.models:
+            model = self.models[prediction.model_name]
+            recent_predictions = model.predict(X.tail(30))  # Last 30 predictions
+            std_dev = np.std(recent_predictions)
+            
+            # Calculate intervals
+            lower_bound = prediction.predicted_price - (1.96 * std_dev)  # 95% confidence
+            upper_bound = prediction.predicted_price + (1.96 * std_dev)
+            
+            return {
+                'lower_95': max(0, lower_bound),
+                'upper_95': upper_bound,
+                'lower_68': max(0, prediction.predicted_price - std_dev),  # 68% confidence
+                'upper_68': prediction.predicted_price + std_dev
+            }
+        
+        return {
+            'lower_95': prediction.predicted_price * 0.9,
+            'upper_95': prediction.predicted_price * 1.1,
+            'lower_68': prediction.predicted_price * 0.95,
+            'upper_68': prediction.predicted_price * 1.05
+        }
+    
+    def _calculate_risk_adjusted_return(self, prediction: PredictionResult, X: pd.DataFrame) -> float:
+        """Calculate risk-adjusted return (Sharpe ratio)"""
+        try:
+            # Get the predicted return from the model
+            # We need to calculate this from the predicted price
+            current_price = self._get_current_price(X, prediction.symbol)
+            expected_return = (prediction.predicted_price - current_price) / current_price
+            
+            # Calculate volatility from price change features if available
+            volatility = 0.02  # Default 2% volatility
+            if 'price_change' in X.columns:
+                volatility = X['price_change'].std()
+            elif 'volatility_5d' in X.columns:
+                volatility = X['volatility_5d'].iloc[-1]
+            
+            # Calculate risk-adjusted return (Sharpe ratio)
+            if volatility > 0:
+                risk_free_rate = 0.05  # 5% risk-free rate
+                risk_adjusted_return = (expected_return - risk_free_rate) / volatility
+            else:
+                risk_adjusted_return = 0
+            
+            return risk_adjusted_return
+            
+        except Exception as e:
+            logger.warning(f"Error calculating risk-adjusted return: {str(e)}")
+            return 0
+    
+    def _calculate_overall_signal(self, predictions: Dict[str, PredictionResult]) -> str:
+        """Calculate overall signal based on multiple timeframes"""
+        signals = [p.signal for p in predictions.values()]
+        confidences = [p.confidence for p in predictions.values()]
+        
+        # Weight signals by confidence
+        buy_weight = sum(confidences[i] for i, signal in enumerate(signals) if signal == 'BUY')
+        sell_weight = sum(confidences[i] for i, signal in enumerate(signals) if signal == 'SELL')
+        hold_weight = sum(confidences[i] for i, signal in enumerate(signals) if signal == 'HOLD')
+        
+        if buy_weight > sell_weight and buy_weight > hold_weight:
+            return 'BUY'
+        elif sell_weight > buy_weight and sell_weight > hold_weight:
+            return 'SELL'
+        else:
+            return 'HOLD'
+    
+    def _calculate_risk_metrics(self, predictions: Dict[str, PredictionResult]) -> Dict[str, float]:
+        """Calculate overall risk metrics"""
+        risk_adjusted_returns = [p.risk_adjusted_return for p in predictions.values() if p.risk_adjusted_return is not None]
+        confidences = [p.confidence for p in predictions.values()]
+        
+        return {
+            'avg_risk_adjusted_return': np.mean(risk_adjusted_returns) if risk_adjusted_returns else 0,
+            'avg_confidence': np.mean(confidences),
+            'signal_consistency': len(set(p.signal for p in predictions.values())),  # Lower = more consistent
+            'timeframe_coverage': len(predictions)
+        }
     
     def ensemble_predict(self, X: pd.DataFrame, symbol: str, weights: Dict[str, float] = None) -> PredictionResult:
         """
@@ -266,23 +475,57 @@ class PredictionAgent:
         perf_key = f"{symbol}_{model_name}"
         if perf_key in self.model_performance:
             r2 = self.model_performance[perf_key]['r2']
-            # Convert R² to confidence (0-1 scale)
-            confidence = max(0, min(1, r2))
-            return confidence
-        return 0.5  # Default confidence
-    
-    def _generate_signal(self, predicted_price: float, X: pd.DataFrame, symbol: str) -> str:
-        """Generate trading signal based on prediction"""
-        # Get current price (assuming it's in the features)
-        current_price = X['Close'].iloc[-1] if 'Close' in X.columns else X.iloc[-1, 0]
+            
+            # Improved confidence calculation
+            if r2 < 0:
+                # Negative R² means model is worse than just predicting the mean
+                confidence = max(5, 10 + (r2 * 10))  # 5-10% for poor models
+            elif r2 < 0.1:
+                # Very low R²
+                confidence = 10 + (r2 * 100)  # 10-20%
+            elif r2 < 0.3:
+                # Low R²
+                confidence = 20 + (r2 * 100)  # 20-50%
+            elif r2 < 0.5:
+                # Moderate R²
+                confidence = 50 + (r2 * 60)  # 50-80%
+            else:
+                # Good R²
+                confidence = 80 + (r2 * 20)  # 80-100%
+            
+            return max(5, min(95, confidence))  # Clamp between 5% and 95%
         
-        # Calculate predicted change
-        price_change_pct = (predicted_price - current_price) / current_price
+        # Default confidence based on model type
+        default_confidences = {
+            'random_forest': 45,
+            'gradient_boosting': 50,
+            'xgboost': 55,
+            'lightgbm': 52,
+            'linear_regression': 35,
+            'ensemble': 60
+        }
+        return default_confidences.get(model_name, 40)
+    
+    def _get_current_price(self, X: pd.DataFrame, symbol: str) -> float:
+        """Get current price for the symbol"""
+        try:
+            # Try to get from data agent
+            from agents.data_agent import DataAgent
+            data_agent = DataAgent()
+            stock_data = data_agent.get_stock_data(symbol, period="1d")
+            return stock_data.data['Close'].iloc[-1]
+        except:
+            # Fallback: use a reasonable default
+            return 1000.0  # Default price
+    
+    def _generate_signal(self, predicted_return: float, X: pd.DataFrame, symbol: str) -> str:
+        """Generate trading signal based on prediction"""
+        # predicted_return is already a percentage change (e.g., 0.05 for 5% increase)
         
         # Generate signal based on threshold
-        if price_change_pct > 0.02:  # 2% increase
+        if predicted_return > 0.02:  # 2% increase
             return 'BUY'
-        elif price_change_pct < -0.02:  # 2% decrease
+        elif predicted_return < -0.02:  # 2% decrease
             return 'SELL'
         else:
             return 'HOLD'

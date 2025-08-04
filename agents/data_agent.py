@@ -192,7 +192,7 @@ class DataAgent:
     
     def prepare_ml_data(self, stock_data: StockData, target_days: int = 1) -> Tuple[pd.DataFrame, pd.Series]:
         """
-        Prepare data for machine learning models
+        Prepare data for machine learning models with improved features
         
         Args:
             stock_data: StockData object
@@ -204,21 +204,89 @@ class DataAgent:
         data = stock_data.data.copy()
         indicators = stock_data.indicators
         
-        # Add indicators to the dataframe
-        for name, indicator in indicators.items():
-            data[f'indicator_{name}'] = indicator
+        # Calculate price changes and returns
+        data['price_change'] = data['Close'].pct_change()
+        data['price_change_2d'] = data['Close'].pct_change(2)
+        data['price_change_5d'] = data['Close'].pct_change(5)
+        data['price_change_10d'] = data['Close'].pct_change(10)
+        data['price_change_20d'] = data['Close'].pct_change(20)
         
-        # Create target variable (future price)
-        data['target'] = data['Close'].shift(-target_days)
+        # Calculate volume features
+        data['volume_change'] = data['Volume'].pct_change()
+        data['volume_sma_ratio'] = data['Volume'] / data['Volume'].rolling(20).mean()
+        data['volume_std_ratio'] = data['Volume'] / data['Volume'].rolling(20).std()
+        
+        # Calculate volatility
+        data['volatility_5d'] = data['price_change'].rolling(5).std()
+        data['volatility_10d'] = data['price_change'].rolling(10).std()
+        data['volatility_20d'] = data['price_change'].rolling(20).std()
+        
+        # Calculate momentum features
+        data['momentum_5d'] = data['Close'] / data['Close'].shift(5) - 1
+        data['momentum_10d'] = data['Close'] / data['Close'].shift(10) - 1
+        data['momentum_20d'] = data['Close'] / data['Close'].shift(20) - 1
+        
+        # Add key technical indicators
+        key_indicators = [
+            'sma_20', 'sma_50', 'ema_12', 'ema_26',
+            'rsi', 'macd', 'macd_signal', 'bb_upper', 'bb_lower',
+            'stoch_k', 'stoch_d'
+        ]
+        
+        for indicator in key_indicators:
+            if indicator in indicators:
+                data[f'indicator_{indicator}'] = indicators[indicator]
+        
+        # Calculate price relative to moving averages
+        if 'sma_20' in indicators and 'sma_50' in indicators:
+            data['price_vs_sma20'] = data['Close'] / indicators['sma_20'] - 1
+            data['price_vs_sma50'] = data['Close'] / indicators['sma_50'] - 1
+            data['sma_cross'] = (indicators['sma_20'] > indicators['sma_50']).astype(int)
+            data['sma_distance'] = (indicators['sma_20'] - indicators['sma_50']) / indicators['sma_50']
+        
+        # Calculate RSI-based features
+        if 'rsi' in indicators:
+            data['rsi_oversold'] = (indicators['rsi'] < 30).astype(int)
+            data['rsi_overbought'] = (indicators['rsi'] > 70).astype(int)
+            data['rsi_trend'] = indicators['rsi'].rolling(5).mean() - indicators['rsi']
+            data['rsi_momentum'] = indicators['rsi'] - indicators['rsi'].shift(5)
+        
+        # Calculate MACD-based features
+        if 'macd' in indicators and 'macd_signal' in indicators:
+            data['macd_cross'] = (indicators['macd'] > indicators['macd_signal']).astype(int)
+            data['macd_strength'] = indicators['macd'] - indicators['macd_signal']
+            data['macd_momentum'] = indicators['macd'] - indicators['macd'].shift(5)
+        
+        # Calculate Bollinger Bands features
+        if 'bb_upper' in indicators and 'bb_lower' in indicators:
+            data['bb_position'] = (data['Close'] - indicators['bb_lower']) / (indicators['bb_upper'] - indicators['bb_lower'])
+            data['bb_squeeze'] = (indicators['bb_upper'] - indicators['bb_lower']) / data['Close']
+            data['bb_breakout'] = ((data['Close'] > indicators['bb_upper']) | (data['Close'] < indicators['bb_lower'])).astype(int)
+        
+        # Create target variable (future price change)
+        if target_days == 1:
+            data['target'] = data['Close'].shift(-1) / data['Close'] - 1  # Next day return
+        else:
+            data['target'] = data['Close'].shift(-target_days) / data['Close'] - 1  # Future return
         
         # Remove rows with NaN values
         data = data.dropna()
         
         # Select features (exclude target and date columns)
-        feature_columns = [col for col in data.columns if col not in ['target', 'Dividends', 'Stock Splits']]
+        exclude_columns = ['target', 'Dividends', 'Stock Splits', 'Open', 'High', 'Low', 'Close', 'Volume']
+        feature_columns = [col for col in data.columns if col not in exclude_columns]
+        
+        # Ensure we have enough data
+        if len(data) < 100:
+            logger.warning(f"Not enough data for ML training: {len(data)} rows")
+            return pd.DataFrame(), pd.Series()
         
         X = data[feature_columns]
         y = data['target']
+        
+        # Log feature information
+        logger.info(f"Prepared ML data: {X.shape[0]} samples, {X.shape[1]} features")
+        logger.info(f"Target range: {y.min():.4f} to {y.max():.4f}")
         
         return X, y
     
