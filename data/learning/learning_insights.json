@@ -1,0 +1,83 @@
+{
+  "analysis_period": "90 days",
+  "total_predictions_analyzed": 30,
+  "error_clusters": {
+    "cluster_0": {
+      "size": 11,
+      "avg_error": 0.7103961840157079,
+      "avg_confidence": 70.97272727272728,
+      "avg_accuracy": 99.28960381598431,
+      "common_symbols": {
+        "GOOGL": 4,
+        "AAPL": 2,
+        "MSFT": 2
+      },
+      "common_timeframes": {
+        "1m": 7,
+        "1w": 3,
+        "1d": 1
+      },
+      "characteristics": []
+    },
+    "cluster_1": {
+      "size": 7,
+      "avg_error": 3.120074263672524,
+      "avg_confidence": 55.0,
+      "avg_accuracy": 96.87992573632748,
+      "common_symbols": {
+        "TSLA": 6,
+        "AMZN": 1
+      },
+      "common_timeframes": {
+        "1m": 3,
+        "1d": 2,
+        "1w": 2
+      },
+      "characteristics": []
+    },
+    "cluster_2": {
+      "size": 12,
+      "avg_error": 0.6617491989146252,
+      "avg_confidence": 82.65833333333335,
+      "avg_accuracy": 99.33825080108538,
+      "common_symbols": {
+        "AAPL": 4,
+        "MSFT": 4,
+        "GOOGL": 2
+      },
+      "common_timeframes": {
+        "1d": 7,
+        "1w": 5
+      },
+      "characteristics": []
+    }
+  },
+  "confidence_analysis": {
+    "correlation": 0.719381809704577,
+    "range_analysis": {
+      "Medium": {
+        "count": 4,
+        "avg_accuracy": 96.54912233062771,
+        "avg_error": 3.450877669372284,
+        "reliability": "Reliable"
+      },
+      "High": {
+        "count": 17,
+        "avg_accuracy": 98.91374606591728,
+        "avg_error": 1.0862539340827282,
+        "reliability": "Reliable"
+      },
+      "Very High": {
+        "count": 9,
+        "avg_accuracy": 99.4082177000044,
+        "avg_error": 0.5917822999956055,
+        "reliability": "Reliable"
+      }
+    },
+    "insights": [
+      "Strong correlation between confidence and accuracy - confidence scoring is working well"
+    ]
+  },
+  "time_patterns": {
+    "timeframe_performance": {
+      

@@ -1,0 +1,950 @@
+[
+  {
+    "id": "AAPL_1d_20250805_112742",
+    "symbol": "AAPL",
+    "prediction_date": "2025-08-05T11:27:42.255691",
+    "target_date": "2025-08-06T11:27:42.255691",
+    "timeframe": "1d",
+    "predicted_price": 150.25,
+    "actual_price": 152.1,
+    "confidence_score": 85.5,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.855,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 1.216305062458905,
+    "absolute_error": 1.8499999999999943,
+    "accuracy_score": 98.7836949375411,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AAPL_1w_20250805_112742",
+    "symbol": "AAPL",
+    "prediction_date": "2025-08-05T11:27:42.255691",
+    "target_date": "2025-08-12T11:27:42.255691",
+    "timeframe": "1w",
+    "predicted_price": 155.0,
+    "actual_price": 153.8,
+    "confidence_score": 78.2,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.782,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.7802340702210588,
+    "absolute_error": 1.1999999999999886,
+    "accuracy_score": 99.21976592977894,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AAPL_1m_20250805_112742",
+    "symbol": "AAPL",
+    "prediction_date": "2025-08-05T11:27:42.273417",
+    "target_date": "2025-09-04T11:27:42.273417",
+    "timeframe": "1m",
+    "predicted_price": 160.0,
+    "actual_price": 158.5,
+    "confidence_score": 65.0,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.65,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 0.9463722397476341,
+    "absolute_error": 1.5,
+    "accuracy_score": 99.05362776025237,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "GOOGL_1d_20250805_112742",
+    "symbol": "GOOGL",
+    "prediction_date": "2025-08-05T11:27:42.276012",
+    "target_date": "2025-08-06T11:27:42.276012",
+    "timeframe": "1d",
+    "predicted_price": 2800.0,
+    "actual_price": 2815.5,
+    "confidence_score": 82.1,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.821,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.5505238856331024,
+    "absolute_error": 15.5,
+    "accuracy_score": 99.4494761143669,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "GOOGL_1w_20250805_112742",
+    "symbol": "GOOGL",
+    "prediction_date": "2025-08-05T11:27:42.278141",
+    "target_date": "2025-08-12T11:27:42.278141",
+    "timeframe": "1w",
+    "predicted_price": 2850.0,
+    "actual_price": 2830.2,
+    "confidence_score": 75.8,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.758,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.6995972016112,
+    "absolute_error": 19.800000000000182,
+    "accuracy_score": 99.3004027983888,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "GOOGL_1m_20250805_112742",
+    "symbol": "GOOGL",
+    "prediction_date": "2025-08-05T11:27:42.282088",
+    "target_date": "2025-09-04T11:27:42.282088",
+    "timeframe": "1m",
+    "predicted_price": 2900.0,
+    "actual_price": 2875.8,
+    "confidence_score": 70.2,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.7020000000000001,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 0.8415049725293767,
+    "absolute_error": 24.199999999999818,
+    "accuracy_score": 99.15849502747062,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "TSLA_1d_20250805_112742",
+    "symbol": "TSLA",
+    "prediction_date": "2025-08-05T11:27:42.285513",
+    "target_date": "2025-08-06T11:27:42.285513",
+    "timeframe": "1d",
+    "predicted_price": 850.0,
+    "actual_price": 820.3,
+    "confidence_score": 60.5,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.605,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 3.6206266000243867,
+    "absolute_error": 29.700000000000045,
+    "accuracy_score": 96.37937339997562,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "TSLA_1w_20250805_112742",
+    "symbol": "TSLA",
+    "prediction_date": "2025-08-05T11:27:42.287633",
+    "target_date": "2025-08-12T11:27:42.287633",
+    "timeframe": "1w",
+    "predicted_price": 880.0,
+    "actual_price": 845.6,
+    "confidence_score": 55.2,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.552,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 4.068117313150423,
+    "absolute_error": 34.39999999999998,
+    "accuracy_score": 95.93188268684958,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "TSLA_1m_20250805_112742",
+    "symbol": "TSLA",
+    "prediction_date": "2025-08-05T11:27:42.292114",
+    "target_date": "2025-09-04T11:27:42.292114",
+    "timeframe": "1m",
+    "predicted_price": 900.0,
+    "actual_price": 875.2,
+    "confidence_score": 45.8,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.45799999999999996,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 2.8336380255941447,
+    "absolute_error": 24.799999999999955,
+    "accuracy_score": 97.16636197440586,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "low",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "MSFT_1d_20250805_112742",
+    "symbol": "MSFT",
+    "prediction_date": "2025-08-05T11:27:42.296531",
+    "target_date": "2025-08-06T11:27:42.296531",
+    "timeframe": "1d",
+    "predicted_price": 320.0,
+    "actual_price": 322.15,
+    "confidence_score": 88.3,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.883,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.6673909669408591,
+    "absolute_error": 2.1499999999999773,
+    "accuracy_score": 99.33260903305914,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "MSFT_1w_20250805_112742",
+    "symbol": "MSFT",
+    "prediction_date": "2025-08-05T11:27:42.302187",
+    "target_date": "2025-08-12T11:27:42.302187",
+    "timeframe": "1w",
+    "predicted_price": 325.0,
+    "actual_price": 324.8,
+    "confidence_score": 80.1,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.8009999999999999,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.06157635467979945,
+    "absolute_error": 0.19999999999998863,
+    "accuracy_score": 99.9384236453202,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "MSFT_1m_20250805_112742",
+    "symbol": "MSFT",
+    "prediction_date": "2025-08-05T11:27:42.304531",
+    "target_date": "2025-09-04T11:27:42.304531",
+    "timeframe": "1m",
+    "predicted_price": 330.0,
+    "actual_price": 328.9,
+    "confidence_score": 72.5,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.725,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 0.334448160535124,
+    "absolute_error": 1.1000000000000227,
+    "accuracy_score": 99.66555183946488,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "NVDA_1d_20250805_112742",
+    "symbol": "NVDA",
+    "prediction_date": "2025-08-05T11:27:42.308841",
+    "target_date": "2025-08-06T11:27:42.308841",
+    "timeframe": "1d",
+    "predicted_price": 450.0,
+    "actual_price": 448.5,
+    "confidence_score": 85.0,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.85,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.33444816053511706,
+    "absolute_error": 1.5,
+    "accuracy_score": 99.66555183946488,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "high",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "NVDA_1w_20250805_112742",
+    "symbol": "NVDA",
+    "prediction_date": "2025-08-05T11:27:42.315423",
+    "target_date": "2025-08-12T11:27:42.315423",
+    "timeframe": "1w",
+    "predicted_price": 460.0,
+    "actual_price": 455.2,
+    "confidence_score": 78.5,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.785,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 1.0544815465729374,
+    "absolute_error": 4.800000000000011,
+    "accuracy_score": 98.94551845342706,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "NVDA_1m_20250805_112742",
+    "symbol": "NVDA",
+    "prediction_date": "2025-08-05T11:27:42.317592",
+    "target_date": "2025-09-04T11:27:42.317592",
+    "timeframe": "1m",
+    "predicted_price": 470.0,
+    "actual_price": 468.8,
+    "confidence_score": 70.0,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.7,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 0.2559726962457314,
+    "absolute_error": 1.1999999999999886,
+    "accuracy_score": 99.74402730375427,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AMZN_1d_20250805_112742",
+    "symbol": "AMZN",
+    "prediction_date": "2025-08-05T11:27:42.324506",
+    "target_date": "2025-08-06T11:27:42.324506",
+    "timeframe": "1d",
+    "predicted_price": 180.0,
+    "actual_price": 182.3,
+    "confidence_score": 75.2,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.752,
+      "market_sentiment": "positive"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 1.2616566099835498,
+    "absolute_error": 2.3000000000000114,
+    "accuracy_score": 98.73834339001645,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AMZN_1w_20250805_112742",
+    "symbol": "AMZN",
+    "prediction_date": "2025-08-05T11:27:42.330755",
+    "target_date": "2025-08-12T11:27:42.330755",
+    "timeframe": "1w",
+    "predicted_price": 185.0,
+    "actual_price": 183.8,
+    "confidence_score": 68.5,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.685,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 0.6528835690968382,
+    "absolute_error": 1.1999999999999886,
+    "accuracy_score": 99.34711643090316,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AMZN_1m_20250805_112742",
+    "symbol": "AMZN",
+    "prediction_date": "2025-08-05T11:27:42.335483",
+    "target_date": "2025-09-04T11:27:42.335483",
+    "timeframe": "1m",
+    "predicted_price": 190.0,
+    "actual_price": 188.5,
+    "confidence_score": 62.0,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.62,
+      "market_sentiment": "neutral"
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "stable"
+    },
+    "status": "completed",
+    "error_percentage": 0.7957559681697612,
+    "absolute_error": 1.5,
+    "accuracy_score": 99.20424403183024,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "stable",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AAPL_1d_20250805_112804",
+    "symbol": "AAPL",
+    "prediction_date": "2025-08-05T11:28:04.618436",
+    "target_date": "2025-08-06T11:28:04.618436",
+    "timeframe": "1d",
+    "predicted_price": 150.25,
+    "actual_price": 152.1,
+    "confidence_score": 85.5,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.855
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 1.216305062458905,
+    "absolute_error": 1.8499999999999943,
+    "accuracy_score": 98.7836949375411,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AAPL_1w_20250805_112804",
+    "symbol": "AAPL",
+    "prediction_date": "2025-08-05T11:28:04.618436",
+    "target_date": "2025-08-12T11:28:04.618436",
+    "timeframe": "1w",
+    "predicted_price": 155.0,
+    "actual_price": 153.8,
+    "confidence_score": 78.2,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.782
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.7802340702210588,
+    "absolute_error": 1.1999999999999886,
+    "accuracy_score": 99.21976592977894,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "AAPL_1m_20250805_112804",
+    "symbol": "AAPL",
+    "prediction_date": "2025-08-05T11:28:04.629430",
+    "target_date": "2025-09-04T11:28:04.629430",
+    "timeframe": "1m",
+    "predicted_price": 160.0,
+    "actual_price": 158.5,
+    "confidence_score": 65.0,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.65
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.9463722397476341,
+    "absolute_error": 1.5,
+    "accuracy_score": 99.05362776025237,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "GOOGL_1d_20250805_112804",
+    "symbol": "GOOGL",
+    "prediction_date": "2025-08-05T11:28:04.635793",
+    "target_date": "2025-08-06T11:28:04.635793",
+    "timeframe": "1d",
+    "predicted_price": 2800.0,
+    "actual_price": 2815.5,
+    "confidence_score": 82.1,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.821
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.5505238856331024,
+    "absolute_error": 15.5,
+    "accuracy_score": 99.4494761143669,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "GOOGL_1w_20250805_112804",
+    "symbol": "GOOGL",
+    "prediction_date": "2025-08-05T11:28:04.640582",
+    "target_date": "2025-08-12T11:28:04.640582",
+    "timeframe": "1w",
+    "predicted_price": 2850.0,
+    "actual_price": 2830.2,
+    "confidence_score": 75.8,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.758
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.6995972016112,
+    "absolute_error": 19.800000000000182,
+    "accuracy_score": 99.3004027983888,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "GOOGL_1m_20250805_112804",
+    "symbol": "GOOGL",
+    "prediction_date": "2025-08-05T11:28:04.648176",
+    "target_date": "2025-09-04T11:28:04.648176",
+    "timeframe": "1m",
+    "predicted_price": 2900.0,
+    "actual_price": 2875.8,
+    "confidence_score": 70.2,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.7020000000000001
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.8415049725293767,
+    "absolute_error": 24.199999999999818,
+    "accuracy_score": 99.15849502747062,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "TSLA_1d_20250805_112804",
+    "symbol": "TSLA",
+    "prediction_date": "2025-08-05T11:28:04.652369",
+    "target_date": "2025-08-06T11:28:04.652369",
+    "timeframe": "1d",
+    "predicted_price": 850.0,
+    "actual_price": 820.3,
+    "confidence_score": 60.5,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.605
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 3.6206266000243867,
+    "absolute_error": 29.700000000000045,
+    "accuracy_score": 96.37937339997562,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "TSLA_1w_20250805_112804",
+    "symbol": "TSLA",
+    "prediction_date": "2025-08-05T11:28:04.660431",
+    "target_date": "2025-08-12T11:28:04.660431",
+    "timeframe": "1w",
+    "predicted_price": 880.0,
+    "actual_price": 845.6,
+    "confidence_score": 55.2,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.552
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 4.068117313150423,
+    "absolute_error": 34.39999999999998,
+    "accuracy_score": 95.93188268684958,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "medium",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "TSLA_1m_20250805_112804",
+    "symbol": "TSLA",
+    "prediction_date": "2025-08-05T11:28:04.667841",
+    "target_date": "2025-09-04T11:28:04.667841",
+    "timeframe": "1m",
+    "predicted_price": 900.0,
+    "actual_price": 875.2,
+    "confidence_score": 45.8,
+    "prediction_features": {
+      "technical_signals": "neutral",
+      "risk_adjusted_return": 0.45799999999999996
+    },
+    "market_conditions": {
+      "volatility": "high",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 2.8336380255941447,
+    "absolute_error": 24.799999999999955,
+    "accuracy_score": 97.16636197440586,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "low",
+      "market_volatility": "high",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "neutral",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "MSFT_1d_20250805_112804",
+    "symbol": "MSFT",
+    "prediction_date": "2025-08-05T11:28:04.673520",
+    "target_date": "2025-08-06T11:28:04.673520",
+    "timeframe": "1d",
+    "predicted_price": 320.0,
+    "actual_price": 322.15,
+    "confidence_score": 88.3,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.883
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.6673909669408591,
+    "absolute_error": 2.1499999999999773,
+    "accuracy_score": 99.33260903305914,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "MSFT_1w_20250805_112804",
+    "symbol": "MSFT",
+    "prediction_date": "2025-08-05T11:28:04.677057",
+    "target_date": "2025-08-12T11:28:04.677057",
+    "timeframe": "1w",
+    "predicted_price": 325.0,
+    "actual_price": 324.8,
+    "confidence_score": 80.1,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.8009999999999999
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "strong",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.06157635467979945,
+    "absolute_error": 0.19999999999998863,
+    "accuracy_score": 99.9384236453202,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "strong",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  },
+  {
+    "id": "MSFT_1m_20250805_112804",
+    "symbol": "MSFT",
+    "prediction_date": "2025-08-05T11:28:04.686960",
+    "target_date": "2025-09-04T11:28:04.686960",
+    "timeframe": "1m",
+    "predicted_price": 330.0,
+    "actual_price": 328.9,
+    "confidence_score": 72.5,
+    "prediction_features": {
+      "technical_signals": "bullish",
+      "risk_adjusted_return": 0.725
+    },
+    "market_conditions": {
+      "volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_trend": "increasing"
+    },
+    "status": "completed",
+    "error_percentage": 0.334448160535124,
+    "absolute_error": 1.1000000000000227,
+    "accuracy_score": 99.66555183946488,
+    "factors_analysis": {
+      "confidence_vs_accuracy": "high",
+      "market_volatility": "medium",
+      "trend_strength": "moderate",
+      "volume_analysis": "increasing",
+      "technical_indicators": "bullish",
+      "potential_issues": []
+    }
+  }
+]

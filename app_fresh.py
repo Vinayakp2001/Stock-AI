@@ -20,6 +20,10 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
+# Import prediction tracking components
+from prediction_tracker import PredictionTracker
+from prediction_accuracy_dashboard import create_accuracy_dashboard, register_accuracy_callbacks
+
 # Initialize Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 app.title = "Stock Prediction Agent SDK"
@@ -117,7 +121,8 @@ app.layout = dbc.Container([
                                 options=[
                                     {'label': 'Price Prediction', 'value': 'prediction'},
                                     {'label': 'Technical Analysis', 'value': 'technical'},
-                                    {'label': 'Backtesting', 'value': 'backtest'}
+                                    {'label': 'Backtesting', 'value': 'backtest'},
+                                    {'label': 'Prediction Accuracy', 'value': 'accuracy'}
                                 ],
                                 value='prediction'
                             )
@@ -192,6 +197,8 @@ def update_results(n_clicks, symbol, period, analysis_type):
             return create_technical_dashboard(symbol, period, data_agent), ""
         elif analysis_type == 'backtest':
             return create_backtest_dashboard(symbol, period, data_agent, backtest_engine), ""
+        elif analysis_type == 'accuracy':
+            return create_accuracy_dashboard(), ""
         else:
             return dbc.Alert("❌ Invalid analysis type.", color="danger"), ""
             
@@ -208,6 +215,25 @@ def create_prediction_dashboard(symbol, period, data_agent, prediction_agent):
         
         # Get multiple timeframe predictions
         multi_prediction = prediction_agent.predict_multiple_timeframes(X, symbol)
+        
+        # Track predictions for accuracy analysis
+        tracker = PredictionTracker()
+        for timeframe, prediction in multi_prediction.predictions.items():
+            tracker.add_prediction(
+                symbol=symbol,
+                timeframe=timeframe,
+                predicted_price=prediction.predicted_price,
+                confidence_score=prediction.confidence,
+                prediction_features={
+                    'technical_signals': prediction.signal,
+                    'risk_adjusted_return': prediction.risk_adjusted_return
+                },
+                market_conditions={
+                    'volatility': 'medium',  # This could be calculated from data
+                    'trend_strength': 'medium',
+                    'volume_trend': 'stable'
+                }
+            )
         
         # Get currency symbol
         currency = get_currency_symbol(symbol)
@@ -419,4 +445,8 @@ if __name__ == '__main__':
     print("🚀 Starting Fresh Stock Prediction Dashboard...")
     print("📍 This version bypasses all Python caching issues!")
     print("🌐 Dashboard will be available at: http://localhost:8050")
+    
+    # Register accuracy dashboard callbacks
+    register_accuracy_callbacks(app)
+    
     app.run(debug=True, host='0.0.0.0', port=8050) 
