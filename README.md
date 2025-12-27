@@ -1,114 +1,131 @@
-# Stock Prediction Agent SDK
+# Stock AI - Autonomous Trading Bot
 
-A comprehensive stock prediction and analysis system with **continuous learning capabilities** that automatically improves prediction accuracy over time.
+A comprehensive stock prediction and analysis system with continuous learning capabilities that automatically improves prediction accuracy over time. The system is designed to evolve into a fully autonomous trading bot capable of achieving 60-70% win rate through advanced machine learning and multi-factor analysis.
 
-## 🚀 **Key Features**
+## Key Features
 
-### 📊 **Prediction & Analysis**
-- **Price Prediction**: ML-based price forecasting with confidence scores
-- **Technical Analysis**: Comprehensive technical indicators and charts
-- **Backtesting**: Strategy testing with detailed performance metrics
+### Prediction & Analysis
+- **Price Prediction**: ML-based price forecasting with confidence scores using multiple models (Random Forest, XGBoost, LightGBM, Gradient Boosting, Linear Regression)
+- **Technical Analysis**: 15+ technical indicators including MACD, RSI, Bollinger Bands, Moving Averages, Stochastic Oscillator
+- **Backtesting**: Strategy testing with detailed performance metrics and multiple trading strategies
 - **Prediction Accuracy**: Real-time accuracy tracking and improvement recommendations
 
-### 🧠 **Learning System**
-- **Automatic Tracking**: Every prediction is tracked and analyzed
-- **Pattern Recognition**: Identifies factors affecting prediction accuracy
-- **Continuous Improvement**: Provides specific recommendations for enhancement
-- **Accuracy Progression**: Shows measurable improvements over time
+### Learning System
+- **Automatic Tracking**: Every prediction is tracked and analyzed for continuous improvement
+- **Pattern Recognition**: Identifies factors affecting prediction accuracy using clustering and statistical analysis
+- **Continuous Improvement**: Provides specific recommendations for model enhancement
+- **Accuracy Progression**: Shows measurable improvements over time with detailed metrics
 
-### 📈 **Dashboard Interface**
-- **Interactive Charts**: Real-time visualization of predictions and accuracy
-- **Comprehensive Metrics**: Detailed performance analysis
-- **User-Friendly Design**: Modern, responsive web interface
+### Dashboard Interface
+- **Interactive Charts**: Real-time visualization of predictions and accuracy using Plotly
+- **Comprehensive Metrics**: Detailed performance analysis with Sharpe ratio, win rate, drawdown metrics
 - **Multi-Analysis Support**: Price prediction, technical analysis, backtesting, accuracy analysis
+- **Responsive Design**: Modern web interface built with Dash and Bootstrap
 
-## 🎯 **How It Improves Accuracy Over Time**
+## Quick Start
 
-### **Week 1-2**: Baseline Performance
-- Track initial prediction accuracy
-- Identify basic patterns and issues
-- Establish performance benchmarks
-
-### **Week 3-4**: Pattern Recognition
-- Analyze prediction errors
-- Identify factors causing failures
-- Generate improvement recommendations
-
-### **Week 5-6**: Implementation
-- Apply recommended improvements
-- Retrain models with new insights
-- Optimize prediction algorithms
-
-### **Week 7-8**: Measurable Gains
-- Show accuracy improvements
-- Validate learning effectiveness
-- Continue optimization cycle
-
-## 🚀 **Quick Start**
-
-### **1. Install Dependencies**
+### Installation
 ```bash
+# Clone the repository
+git clone https://github.com/Vinayakp2001/Stock-AI.git
+cd Stock-AI
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### **2. Start the Dashboard**
+### Running the Application
 ```bash
+# Start the dashboard
 python app_fresh.py
+
+# Access the system at http://localhost:8050
 ```
 
-### **3. Access the System**
-Open http://localhost:8050 in your browser
+### Basic Usage
+1. **Price Prediction**: Select stocks and timeframes for ML-based forecasts
+2. **Technical Analysis**: View comprehensive technical indicators and charts
+3. **Backtesting**: Test trading strategies on historical data
+4. **Prediction Accuracy**: Monitor and analyze prediction performance
 
-### **4. Choose Analysis Type**
-- **Price Prediction**: Make ML-based forecasts
-- **Technical Analysis**: View technical indicators
-- **Backtesting**: Test trading strategies
-- **Prediction Accuracy**: View accuracy analysis and recommendations
-
-## 📁 **Project Structure**
+## Project Structure
 
 ```
-agent_sdk_env/
-├── app_fresh.py                    # Main dashboard application
-├── prediction_tracker.py           # Prediction tracking system
-├── prediction_accuracy_dashboard.py # Accuracy analysis dashboard
-├── accuracy_learning_engine.py     # Learning and improvement engine
-├── update_actual_prices.py         # Automated price updates
+Stock-AI/
 ├── agents/                         # Core system components
 │   ├── data_agent.py              # Data fetching and preprocessing
 │   └── prediction_agent.py        # Machine learning predictions
 ├── backtesting/                    # Strategy testing framework
-│   └── engine.py                  # Backtesting engine
+│   └── engine.py                  # Backtesting engine with multiple strategies
 ├── data/                          # Data storage
 │   ├── predictions/               # Prediction tracking data
-│   └── learning/                  # Learning insights
-├── models/                        # Trained ML models
-└── requirements.txt               # Dependencies
+│   └── learning/                  # Learning insights and analysis
+├── models/                        # Trained ML models storage
+├── app_fresh.py                   # Main dashboard application
+├── prediction_tracker.py          # Prediction tracking system
+├── prediction_accuracy_dashboard.py # Accuracy analysis dashboard
+├── accuracy_learning_engine.py    # Learning and improvement engine
+├── update_actual_prices.py        # Automated price updates
+├── main.py                        # Command-line interface
+└── requirements.txt               # Project dependencies
 ```
 
-## 📊 **Usage Examples**
+## Architecture Overview
 
-### **Make Predictions**
-1. Select "Price Prediction" from analysis dropdown
-2. Choose stock symbol and timeframe
-3. View predictions with confidence scores
-4. System automatically tracks for accuracy analysis
+### Data Collection & Processing
+- **Real-time Data**: Yahoo Finance integration for market data
+- **Technical Indicators**: 15+ indicators using TA-Lib
+- **Feature Engineering**: 40+ derived features for ML models
+- **Data Caching**: Intelligent caching to reduce API calls
 
-### **View Accuracy Analysis**
-1. Select "Prediction Accuracy" from analysis dropdown
-2. View comprehensive accuracy metrics
-3. See improvement recommendations
-4. Track learning progression over time
+### Machine Learning Pipeline
+- **Multiple Models**: Random Forest, XGBoost, LightGBM, Gradient Boosting, Linear Regression
+- **Ensemble Methods**: Weighted predictions from multiple models
+- **Multi-timeframe Analysis**: 1-day, 1-week, 1-month predictions
+- **Confidence Scoring**: Model performance-based confidence intervals
 
-### **Run Backtesting**
-1. Select "Backtesting" from analysis dropdown
-2. Choose strategy and parameters
-3. View detailed performance metrics
-4. Compare different strategies
+### Backtesting Framework
+- **Strategy Testing**: Moving Average, RSI, MACD strategies
+- **Performance Metrics**: Sharpe ratio, maximum drawdown, win rate, profit factor
+- **Risk Analysis**: Comprehensive risk-adjusted return calculations
+- **Historical Validation**: Multi-year backtesting capabilities
 
-### **Update Actual Prices**
+### Learning & Improvement
+- **Prediction Tracking**: Automatic tracking of all predictions vs actual outcomes
+- **Error Analysis**: Pattern recognition in prediction errors using clustering
+- **Performance Attribution**: Detailed analysis of what drives accuracy
+- **Continuous Learning**: Automatic model retraining and parameter optimization
+
+## Usage Examples
+
+### Command Line Interface
 ```bash
-# Update prices for completed predictions
+# Analyze a specific stock
+python main.py --symbol AAPL --period 6mo --indicators
+
+# Run backtesting
+python main.py --symbol RELIANCE.NS --backtest
+
+# Compare multiple stocks
+python main.py --compare AAPL GOOGL MSFT --period 1y
+
+# Run comprehensive demo
+python main.py --demo
+```
+
+### Dashboard Interface
+1. **Stock Selection**: Choose from US stocks, Indian stocks, or market indices
+2. **Analysis Type**: Select prediction, technical analysis, backtesting, or accuracy analysis
+3. **Time Period**: Configure analysis period from 1 month to 2 years
+4. **Real-time Results**: View interactive charts and detailed metrics
+
+### Prediction Tracking
+```bash
+# Update actual prices for completed predictions
 python update_actual_prices.py --update
 
 # View accuracy summary
@@ -118,74 +135,131 @@ python update_actual_prices.py --summary
 python update_actual_prices.py --recommendations
 ```
 
-## 🎯 **Expected Outcomes**
+## Technical Specifications
 
-### **Accuracy Improvement Timeline**
-- **Month 1**: 5-10% accuracy improvement
-- **Month 2**: 10-15% accuracy improvement  
-- **Month 3**: 15-20% accuracy improvement
-- **Month 4+**: 20-25% accuracy improvement
+### Supported Markets
+- **US Markets**: NYSE, NASDAQ (AAPL, GOOGL, MSFT, TSLA, etc.)
+- **Indian Markets**: NSE, BSE (RELIANCE.NS, TCS.NS, INFY.NS, etc.)
+- **Market Indices**: S&P 500, NASDAQ, Dow Jones, NIFTY, SENSEX
 
-### **Continuous Learning Benefits**
-- **Adaptive Models**: Automatically adjust to market changes
-- **Pattern Recognition**: Identify what works and what doesn't
-- **Specific Recommendations**: Actionable improvement suggestions
-- **Measurable Progress**: Track accuracy gains over time
+### Machine Learning Models
+- **Random Forest**: Ensemble learning with 200 estimators
+- **XGBoost**: Gradient boosting with advanced regularization
+- **LightGBM**: Fast gradient boosting framework
+- **Gradient Boosting**: Sequential ensemble method
+- **Linear Regression**: Baseline model with feature scaling
 
-## 🔧 **Maintenance**
+### Technical Indicators
+- **Trend**: SMA, EMA, MACD, ADX
+- **Momentum**: RSI, Stochastic, Williams %R, CCI
+- **Volatility**: Bollinger Bands, ATR
+- **Volume**: OBV, Volume SMA
+- **Custom**: Price patterns, volatility measures, momentum features
 
-### **Automated Tasks**
-- **Price Updates**: Run daily to update actual prices
-- **Accuracy Analysis**: Automatic after each prediction
-- **Learning Insights**: Generated automatically
-- **Recommendations**: Updated based on latest data
+### Performance Metrics
+- **Accuracy**: Percentage of correct predictions
+- **Sharpe Ratio**: Risk-adjusted returns
+- **Maximum Drawdown**: Largest peak-to-trough decline
+- **Win Rate**: Percentage of profitable trades
+- **Profit Factor**: Ratio of gross profits to gross losses
+- **Confidence Correlation**: Relationship between confidence and accuracy
 
-### **Manual Tasks**
-- **Review Recommendations**: Check improvement suggestions
-- **Implement Changes**: Apply recommended optimizations
-- **Monitor Progress**: Track accuracy improvements
-- **Adjust Parameters**: Fine-tune based on performance
+## Expected Outcomes
 
-## 📋 **Dependencies**
+### Accuracy Improvement Timeline
+- **Month 1**: 5-10% accuracy improvement through basic learning
+- **Month 2**: 10-15% accuracy improvement with pattern recognition
+- **Month 3**: 15-20% accuracy improvement with advanced optimization
+- **Month 4+**: 20-25% accuracy improvement with continuous learning
 
-Key packages include:
-- **Dash**: Web dashboard framework
-- **Plotly**: Interactive charts
-- **Pandas/NumPy**: Data processing
-- **Scikit-learn**: Machine learning
-- **LightGBM**: Gradient boosting
-- **YFinance**: Stock data
-- **Backtrader**: Backtesting
+### Performance Targets
+- **Win Rate**: Target 60-70% for autonomous trading
+- **Sharpe Ratio**: Target >1.5 for risk-adjusted returns
+- **Maximum Drawdown**: Keep below 15% for capital protection
+- **Prediction Accuracy**: Achieve >75% directional accuracy
 
-See `requirements.txt` for complete list.
+## Development Roadmap
 
-## 🎉 **Why This System Works**
+### Phase 1: Foundation Enhancement
+- Add fundamental analysis (P/E ratios, financial metrics)
+- Implement sentiment analysis (news, social media)
+- Build multi-factor scoring system
+- Enhance risk management framework
 
-### **1. Continuous Learning**
-- Learns from every prediction success/failure
-- Identifies patterns humans might miss
-- Adapts to changing market conditions
+### Phase 2: Autonomous Trading
+- Integrate broker APIs (Zerodha, Alpaca)
+- Implement order execution system
+- Add position management
+- Build safety controls and circuit breakers
 
-### **2. Data-Driven Decisions**
-- Quantified accuracy metrics
-- Specific improvement recommendations
-- Measurable progress tracking
+### Phase 3: Advanced Features
+- Portfolio optimization
+- Market regime detection
+- Advanced learning algorithms
+- Mobile application
 
-### **3. Automated Optimization**
-- Automatic pattern recognition
-- Proactive issue identification
-- Continuous model improvement
+## Contributing
 
-### **4. User-Friendly Interface**
-- Intuitive dashboard design
-- Real-time updates
-- Comprehensive analysis tools
+We welcome contributions from the community! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
-## 🚀 **Get Started Today**
+- Setting up the development environment
+- Code style and testing requirements
+- Issue reporting and feature requests
+- Pull request process
+- Community guidelines
 
-1. **Clone and install** the system
-2. **Run the dashboard** and make your first predictions
-3. **Monitor accuracy** and follow recommendations
-4. **Watch your predictions improve** over time!
+### Quick Start for Contributors
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with tests
+4. Submit a pull request
 
-The system will automatically learn and improve, helping you make better trading decisions with each prediction.
+See our [GitHub Issues](https://github.com/Vinayakp2001/Stock-AI/issues) for current development priorities.
+
+## Dependencies
+
+### Core Libraries
+- **pandas**: Data manipulation and analysis
+- **numpy**: Numerical computing
+- **scikit-learn**: Machine learning algorithms
+- **xgboost**: Gradient boosting framework
+- **lightgbm**: Fast gradient boosting
+- **yfinance**: Yahoo Finance data
+- **ta**: Technical analysis indicators
+
+### Visualization & Dashboard
+- **dash**: Web application framework
+- **plotly**: Interactive plotting
+- **dash-bootstrap-components**: UI components
+
+### Additional Libraries
+- **tensorflow**: Deep learning (optional)
+- **backtrader**: Backtesting framework
+- **scipy**: Scientific computing
+- **requests**: HTTP library
+
+See [requirements.txt](requirements.txt) for complete dependency list.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Yahoo Finance for providing free market data
+- The open-source community for excellent libraries
+- Contributors who help improve the system
+
+## Disclaimer
+
+This software is for educational and research purposes only. It is not intended as financial advice. Trading stocks involves risk, and you should carefully consider your investment objectives and risk tolerance before making any investment decisions. Past performance does not guarantee future results.
+
+## Contact
+
+- **Repository**: https://github.com/Vinayakp2001/Stock-AI
+- **Issues**: https://github.com/Vinayakp2001/Stock-AI/issues
+- **Discussions**: https://github.com/Vinayakp2001/Stock-AI/discussions
+
+---
+
+**Built with Python and Machine Learning for the Future of Algorithmic Trading**
