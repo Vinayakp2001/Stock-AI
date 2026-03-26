@@ -256,9 +256,9 @@ This software is for educational and research purposes only. It is not intended 
 
 ## Contact
 
-- **Repository**: https://github.com/Vinayakp2001/Stock-AI
-- **Issues**: https://github.com/Vinayakp2001/Stock-AI/issues
-- **Discussions**: https://github.com/Vinayakp2001/Stock-AI/discussions
+- **[Repository](https://github.com/Vinayakp2001/Stock-AI)**
+- **[Issues](https://github.com/Vinayakp2001/Stock-AI/issues)**
+- **[Discussions](https://github.com/Vinayakp2001/Stock-AI/discussions)**
 
 ---
 

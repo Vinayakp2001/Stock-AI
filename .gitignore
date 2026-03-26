@@ -2,6 +2,7 @@
 venv/
 env/
 ENV/
+stock_env/
 env.bak/
 venv.bak/
 pyvenv.cfg
@@ -53,6 +54,9 @@ MANIFEST
 # Data files (keep structure but ignore large data files)
 data/predictions/*.json
 data/learning/*.json
+data/scalping/*.json
+
+# Trained models (large binary files)
 models/*.joblib
 models/*.pkl
 
