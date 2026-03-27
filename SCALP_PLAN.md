@@ -30,8 +30,8 @@ After all issues are done, integrate Zerodha WebSocket, TrueData API, and Auto T
 
 | # | Issue | GitHub # | Status | Spec |
 |---|-------|----------|--------|------|
-| 1 | Improve Scalping Strategy Win Rate to 60%+ | #56 | 🟡 IN PROGRESS | `.kiro/specs/scalping-win-rate/` |
-| 2 | Enhanced Backtesting and Paper Trading Platform | #48 | 🔴 TODO | - |
+| 1 | Improve Scalping Strategy Win Rate to 60%+ | #56 | 🟢 DONE | `.kiro/specs/scalping-win-rate/` |
+| 2 | Enhanced Backtesting and Paper Trading Platform | #48 | 🟡 IN PROGRESS | - |
 | 3 | Build Comprehensive Risk Management Module | #4 | 🔴 TODO | - |
 | 4 | Implement Flexible Trading Strategy Framework | #5 | 🔴 TODO | - |
 | 5 | Build Comprehensive Multi-Factor Stock Scoring System | #3 | 🔴 TODO | - |
@@ -128,8 +128,8 @@ gh issue close 56 --repo Vinayakp2001/Stock-AI --comment "Scalping strategy impr
 ## Current Progress
 
 - Total Issues: 26
-- Completed: 0
-- In Progress: 0
-- Remaining: 26
+- Completed: 1
+- In Progress: 1
+- Remaining: 24
 
-**Next Issue to Start: #56 - Improve Scalping Strategy Win Rate to 60%+**
+**Next Issue: #48 - Enhanced Backtesting and Paper Trading Platform**
