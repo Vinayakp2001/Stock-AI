@@ -9,6 +9,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scalping.backtester import ScalpingBacktester
+from scalping.batch_backtester import BatchBacktester
 from scalping.paper_trader import PaperTrader
 from scalping.strategies.ema_crossover import EMACrossoverStrategy
 from scalping.strategies.vwap_strategy import VWAPStrategy
@@ -25,12 +26,15 @@ STRATEGIES = {
 }
 
 
-def run_backtest(symbol, strategy_name, mode, capital):
+def run_backtest(symbol, strategy_name, mode, capital, save_report=False):
     print(f"\nRunning backtest: {symbol} | {strategy_name.upper()} | {mode.upper()}")
     strategy = STRATEGIES[strategy_name]
     backtester = ScalpingBacktester(initial_capital=capital)
     result = backtester.run_backtest(strategy, symbol, period="7d", interval="1m", mode=mode)
     backtester.print_report(result)
+    if save_report:
+        path = backtester.save_report(result)
+        print(f"\nReport saved to: {path}")
     return result
 
 
@@ -177,9 +181,66 @@ def run_validation(capital: float = 100000):
     return report
 
 
+def run_batch(mode, capital):
+    """Run all strategies on all NSE recommended stocks."""
+    symbols = RECOMMENDED_STOCKS['NSE']
+    print(f"\nBatch backtest: {len(symbols)} symbols × {len(STRATEGIES)} strategies | {mode.upper()}")
+    batcher = BatchBacktester(initial_capital=capital)
+    batch_result = batcher.run_batch(symbols, STRATEGIES, mode=mode, capital=capital)
+    batcher.print_summary_table(batch_result)
+    return batch_result
+
+
+def run_walkforward(symbol, strategy_name, mode, capital):
+    """Run walk-forward validation for a single symbol/strategy."""
+    print(f"\nWalk-forward: {symbol} | {strategy_name.upper()} | {mode.upper()}")
+    strategy = STRATEGIES[strategy_name]
+    backtester = ScalpingBacktester(initial_capital=capital)
+    wf_result = backtester.run_walkforward(strategy, symbol, n_folds=3, train_pct=0.70, mode=mode)
+    backtester.print_walkforward_report(wf_result)
+    return wf_result
+
+
+def run_compare(symbol, mode, capital, save_report=False):
+    """Run all 4 strategies on the same symbol and print a comparison table."""
+    print(f"\nComparing all strategies on {symbol} | {mode.upper()}")
+    backtester = ScalpingBacktester(initial_capital=capital)
+    rows = []
+    for name, strategy in STRATEGIES.items():
+        try:
+            result = backtester.run_backtest(strategy, symbol, period="7d", interval="1m", mode=mode)
+            rows.append({
+                "strategy": name,
+                "trades": result.total_trades,
+                "win_rate": result.win_rate,
+                "profit_factor": result.profit_factor,
+                "net_pnl": result.total_net_pnl,
+                "max_dd": result.max_drawdown_pct,
+                "gate": "PASS" if result.validation_passed else "FAIL",
+                "result": result,
+            })
+            if save_report:
+                backtester.save_report(result)
+        except Exception as e:
+            print(f"  {name}: ERROR — {e}")
+
+    rows.sort(key=lambda r: r["win_rate"], reverse=True)
+
+    print(f"\n{'Strategy':<12} {'Trades':>7} {'Win%':>7} {'PF':>6} {'Net P&L':>10} {'DD%':>7} {'Gate'}")
+    print("-" * 60)
+    for r in rows:
+        print(
+            f"{r['strategy']:<12} {r['trades']:>7} {r['win_rate']:>6.1%} "
+            f"{r['profit_factor']:>6.2f} {r['net_pnl']:>10,.0f} "
+            f"{r['max_dd']:>6.1%} {r['gate']}"
+        )
+    if save_report:
+        print(f"\nReports saved to data/scalping/reports/")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Scalping Module Runner")
-    parser.add_argument("--mode", choices=["backtest", "paper", "validate"], default="backtest")
+    parser.add_argument("--mode", choices=["backtest", "paper", "validate", "batch", "walkforward"], default="backtest")
     parser.add_argument("--symbol", default="RELIANCE.NS")
     parser.add_argument("--strategy", choices=["ema", "vwap", "rsi", "improved"], default="ema")
     parser.add_argument("--trading-mode", choices=["conservative", "aggressive"], default="conservative")
@@ -187,6 +248,8 @@ def main():
     parser.add_argument("--days", type=int, default=5, help="Days for paper trading (max 7)")
     parser.add_argument("--list-stocks", action="store_true")
     parser.add_argument("--train-ml", action="store_true", help="Train ML model for improved strategy")
+    parser.add_argument("--save-report", action="store_true", help="Save JSON report after backtest")
+    parser.add_argument("--compare", action="store_true", help="Run all 4 strategies on same symbol")
 
     args = parser.parse_args()
 
@@ -200,12 +263,20 @@ def main():
         run_train_ml(args.symbol, args.capital)
         return
 
+    if args.compare:
+        run_compare(args.symbol, args.trading_mode, args.capital, save_report=args.save_report)
+        return
+
     if args.mode == "backtest":
-        run_backtest(args.symbol, args.strategy, args.trading_mode, args.capital)
+        run_backtest(args.symbol, args.strategy, args.trading_mode, args.capital, save_report=args.save_report)
     elif args.mode == "paper":
         run_paper(args.symbol, args.strategy, args.trading_mode, args.capital, args.days)
     elif args.mode == "validate":
         run_validation(args.capital)
+    elif args.mode == "batch":
+        run_batch(args.trading_mode, args.capital)
+    elif args.mode == "walkforward":
+        run_walkforward(args.symbol, args.strategy, args.trading_mode, args.capital)
 
 
 if __name__ == "__main__":

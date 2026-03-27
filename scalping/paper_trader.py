@@ -155,13 +155,15 @@ class PaperTrader:
         strategy_name: str,
         config: Dict
     ) -> List[ScalpTrade]:
-        """Simulate paper trades from signals"""
+        """Simulate paper trades from signals with realistic execution."""
         trades = []
         trade_id = 0
         capital = self.capital
-        open_trade = None
+        open_trades: List[ScalpTrade] = []   # support up to 5 simultaneous positions
         daily_count = 0
         current_day = None
+
+        MAX_OPEN_POSITIONS = 5
 
         for timestamp, row in df.iterrows():
             trade_day = timestamp.date() if hasattr(timestamp, 'date') else timestamp
@@ -169,8 +171,9 @@ class PaperTrader:
                 current_day = trade_day
                 daily_count = 0
 
-            # Check exit for open trade
-            if open_trade is not None:
+            # Check exits for all open trades
+            still_open = []
+            for open_trade in open_trades:
                 exit_price = None
                 exit_reason = ""
 
@@ -189,45 +192,72 @@ class PaperTrader:
                         exit_price = open_trade.take_profit
                         exit_reason = "TAKE_PROFIT"
 
-                if exit_price:
+                if exit_price is not None:
                     open_trade = self._close_paper_trade(open_trade, exit_price, timestamp, exit_reason)
                     capital += open_trade.net_pnl
                     trades.append(open_trade)
-                    open_trade = None
+                    self._persist_stats(trades)
+                else:
+                    still_open.append(open_trade)
 
-            # New entry
-            if (open_trade is None
+            open_trades = still_open
+
+            # New entry — enforce max 5 simultaneous positions
+            if (len(open_trades) < MAX_OPEN_POSITIONS
                     and row['signal'] in ['BUY', 'SELL']
                     and daily_count < config['max_trades_per_day']
-                    and capital > 0):
+                    and capital > 0
+                    and not pd.isna(row.get('entry_price', float('nan')))
+                    and not pd.isna(row.get('stop_loss', float('nan')))
+                    and not pd.isna(row.get('take_profit', float('nan')))):
 
-                quantity = max(1, int(capital * config['max_risk_per_trade_pct'] / row['entry_price']))
-                cost = self._calc_cost(row['entry_price'], quantity) * 2
+                raw_entry = float(row['entry_price'])
+
+                # Random slippage 0.01% – 0.05%
+                slippage_pct = np.random.uniform(0.0001, 0.0005)
+                if row['signal'] == 'BUY':
+                    entry_price = raw_entry * (1 + slippage_pct)
+                else:
+                    entry_price = raw_entry * (1 - slippage_pct)
+
+                # Partial fill: if order > 1% of avg volume, fill at 70%
+                avg_vol = df['Volume'].rolling(20).mean().loc[timestamp] if 'Volume' in df.columns else None
+                base_qty = max(1, int(capital * config['max_risk_per_trade_pct'] / entry_price))
+                if avg_vol and not np.isnan(avg_vol) and avg_vol > 0:
+                    order_value = base_qty * entry_price
+                    if order_value > 0.01 * avg_vol * entry_price:
+                        base_qty = max(1, int(base_qty * 0.70))
+                quantity = base_qty
+
+                cost = self._calc_cost(entry_price, quantity) * 2
 
                 open_trade = ScalpTrade(
                     id=trade_id,
                     symbol=symbol,
                     entry_time=timestamp,
                     exit_time=None,
-                    entry_price=row['entry_price'],
+                    entry_price=entry_price,
                     exit_price=None,
-                    stop_loss=row['stop_loss'],
-                    take_profit=row['take_profit'],
+                    stop_loss=float(row['stop_loss']),
+                    take_profit=float(row['take_profit']),
                     side=row['signal'],
                     quantity=quantity,
-                    signal_score=row['signal_score'],
+                    signal_score=float(row['signal_score']),
                     strategy_name=strategy_name,
                     status='OPEN',
                     transaction_cost=cost
                 )
+                open_trades.append(open_trade)
                 trade_id += 1
                 daily_count += 1
 
-        # Close open trade at end
-        if open_trade is not None:
-            last_price = df['Close'].iloc[-1]
+        # Close all remaining open trades at end of data
+        last_price = float(df['Close'].iloc[-1])
+        for open_trade in open_trades:
             open_trade = self._close_paper_trade(open_trade, last_price, df.index[-1], "END_OF_DAY")
             trades.append(open_trade)
+        if open_trades:
+            self._persist_stats(trades)
 
         return trades
 
@@ -253,6 +283,25 @@ class PaperTrader:
                     + trade_value * self.costs['stt_pct']
                     + trade_value * self.costs['slippage_pct'])
         return trade_value * self.costs['slippage_pct']
+
+    def _persist_stats(self, trades: List[ScalpTrade]) -> None:
+        """Write a lightweight stats snapshot to paper_stats.json after every trade close."""
+        closed = [t for t in trades if t.status != 'OPEN']
+        wins = [t for t in closed if t.status == 'WIN']
+        net_pnl = sum(t.net_pnl for t in closed)
+        win_rate = len(wins) / len(closed) if closed else 0.0
+
+        stats = {
+            "updated_at": datetime.now().isoformat(),
+            "total_trades": len(closed),
+            "winning_trades": len(wins),
+            "win_rate": round(win_rate, 4),
+            "net_pnl": round(net_pnl, 2),
+            "return_pct": round(net_pnl / self.capital, 4),
+        }
+        os.makedirs("data/scalping", exist_ok=True)
+        with open(PAPER_STATS_FILE, "w") as f:
+            json.dump(stats, f, indent=2)
 
     def _calculate_session_stats(self, trades: List[ScalpTrade], session_id: str) -> Dict:
         closed = [t for t in trades if t.status != 'OPEN']

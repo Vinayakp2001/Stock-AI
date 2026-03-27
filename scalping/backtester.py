@@ -4,6 +4,8 @@ Extends the existing BacktestEngine for intraday scalping with
 realistic cost modeling and benchmark validation
 """
 
+import json
+import os
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -500,6 +502,271 @@ class ScalpingBacktester:
             meets_aggressive_target=False, validation_passed=False,
             validation_details={}
         )
+
+    def run_walkforward(
+        self,
+        strategy,
+        symbol: str,
+        n_folds: int = 3,
+        train_pct: float = 0.70,
+        mode: str = "conservative",
+        period: str = "7d",
+        interval: str = "1m",
+    ) -> Dict[str, Any]:
+        """
+        Run walk-forward validation by splitting data into N folds.
+
+        Each fold uses the first train_pct of its slice as "training context"
+        (signals are generated on the full slice but trades are only counted
+        from the test portion), then backtests on the remaining test portion.
+
+        Returns a dict with per-fold metrics, avg win rate, std dev, stability
+        flag, and a plain-English recommendation.
+        """
+        data = self.fetch_data(symbol, period, interval)
+        total_candles = len(data)
+
+        if total_candles < n_folds * 10:
+            raise ValueError(
+                f"Not enough data ({total_candles} candles) for {n_folds} folds"
+            )
+
+        fold_size = total_candles // n_folds
+        folds_results = []
+
+        for fold_idx in range(n_folds):
+            fold_start = fold_idx * fold_size
+            # Last fold absorbs any remainder candles
+            fold_end = fold_start + fold_size if fold_idx < n_folds - 1 else total_candles
+            fold_data = data.iloc[fold_start:fold_end].copy()
+
+            train_cutoff = int(len(fold_data) * train_pct)
+            test_data = fold_data.iloc[train_cutoff:].copy()
+
+            if len(test_data) < 5:
+                logger.warning(f"Fold {fold_idx + 1}: insufficient test data, skipping")
+                folds_results.append({
+                    "fold": fold_idx + 1,
+                    "train_candles": train_cutoff,
+                    "test_candles": len(test_data),
+                    "win_rate": None,
+                    "profit_factor": None,
+                    "total_trades": 0,
+                    "sharpe": None,
+                    "status": "insufficient_data",
+                })
+                continue
+
+            config = CONSERVATIVE if mode == "conservative" else AGGRESSIVE
+
+            try:
+                signals_df = strategy.generate_signals(test_data)
+                trades = self._simulate_trades(signals_df, symbol, strategy.name, config)
+                result = self._calculate_metrics(
+                    trades, symbol, strategy.name, mode,
+                    f"fold_{fold_idx + 1}", interval, config
+                )
+                folds_results.append({
+                    "fold": fold_idx + 1,
+                    "train_candles": train_cutoff,
+                    "test_candles": len(test_data),
+                    "win_rate": result.win_rate,
+                    "profit_factor": result.profit_factor,
+                    "total_trades": result.total_trades,
+                    "sharpe": result.sharpe_ratio,
+                    "status": "ok",
+                })
+            except Exception as e:
+                logger.warning(f"Fold {fold_idx + 1} failed: {e}")
+                folds_results.append({
+                    "fold": fold_idx + 1,
+                    "train_candles": train_cutoff,
+                    "test_candles": len(test_data),
+                    "win_rate": None,
+                    "profit_factor": None,
+                    "total_trades": 0,
+                    "sharpe": None,
+                    "status": f"error: {e}",
+                })
+
+        # Compute aggregate stats from valid folds only
+        valid_win_rates = [
+            f["win_rate"] for f in folds_results
+            if f["win_rate"] is not None
+        ]
+
+        if valid_win_rates:
+            avg_win_rate = float(np.mean(valid_win_rates))
+            std_win_rate = float(np.std(valid_win_rates))
+        else:
+            avg_win_rate = 0.0
+            std_win_rate = 0.0
+
+        stable = std_win_rate < 0.15
+
+        if not valid_win_rates:
+            recommendation = "No valid folds — check data availability or strategy signals."
+        elif stable and avg_win_rate >= VALIDATION_GATE['min_win_rate']:
+            recommendation = (
+                f"Strategy is STABLE (std={std_win_rate:.1%}) with avg win rate "
+                f"{avg_win_rate:.1%}. Suitable for paper trading."
+            )
+        elif stable:
+            recommendation = (
+                f"Strategy is STABLE (std={std_win_rate:.1%}) but avg win rate "
+                f"{avg_win_rate:.1%} is below the {VALIDATION_GATE['min_win_rate']:.0%} gate. "
+                "Needs further optimisation."
+            )
+        else:
+            recommendation = (
+                f"Strategy is UNSTABLE (std={std_win_rate:.1%} > 15%). "
+                "Results vary too much across market conditions — avoid live use."
+            )
+
+        return {
+            "symbol": symbol,
+            "strategy": strategy.name,
+            "mode": mode,
+            "n_folds": n_folds,
+            "train_pct": train_pct,
+            "folds": folds_results,
+            "avg_win_rate": avg_win_rate,
+            "std_win_rate": std_win_rate,
+            "stable": stable,
+            "recommendation": recommendation,
+        }
+
+    def save_report(self, result: ScalpBacktestResult) -> str:
+        """
+        Serialise full backtest result + trade list + equity curve +
+        hourly win-rate breakdown to JSON.
+
+        Returns the path of the saved file.
+        """
+        out_dir = os.path.join("data", "scalping", "reports")
+        os.makedirs(out_dir, exist_ok=True)
+
+        date_str = datetime.now().strftime("%Y%m%d")
+        safe_strategy = result.strategy_name.replace(" ", "_").replace("/", "-")
+        filename = f"{result.symbol}_{safe_strategy}_{date_str}.json"
+        filepath = os.path.join(out_dir, filename)
+
+        # Hourly win-rate breakdown
+        hourly: Dict[int, Dict[str, int]] = {}
+        for t in result.trades:
+            if t.status == 'OPEN' or t.entry_time is None:
+                continue
+            hour = t.entry_time.hour if hasattr(t.entry_time, 'hour') else int(str(t.entry_time)[11:13])
+            if hour not in hourly:
+                hourly[hour] = {"trades": 0, "wins": 0}
+            hourly[hour]["trades"] += 1
+            if t.status == 'WIN':
+                hourly[hour]["wins"] += 1
+
+        hourly_breakdown = [
+            {
+                "hour": h,
+                "trades": v["trades"],
+                "wins": v["wins"],
+                "win_rate": round(v["wins"] / v["trades"], 4) if v["trades"] > 0 else 0,
+            }
+            for h, v in sorted(hourly.items())
+        ]
+
+        def _trade_dict(t: ScalpTrade) -> Dict:
+            return {
+                "id": t.id,
+                "symbol": t.symbol,
+                "entry_time": str(t.entry_time),
+                "exit_time": str(t.exit_time) if t.exit_time else None,
+                "entry_price": t.entry_price,
+                "exit_price": t.exit_price,
+                "stop_loss": t.stop_loss,
+                "take_profit": t.take_profit,
+                "side": t.side,
+                "quantity": t.quantity,
+                "signal_score": t.signal_score,
+                "strategy_name": t.strategy_name,
+                "status": t.status,
+                "gross_pnl": round(t.gross_pnl, 2),
+                "transaction_cost": round(t.transaction_cost, 2),
+                "net_pnl": round(t.net_pnl, 2),
+                "pnl_pct": round(t.pnl_pct, 6),
+                "exit_reason": t.exit_reason,
+            }
+
+        payload = {
+            "generated_at": datetime.now().isoformat(),
+            "symbol": result.symbol,
+            "strategy_name": result.strategy_name,
+            "mode": result.mode,
+            "period": result.period,
+            "interval": result.interval,
+            "initial_capital": result.initial_capital,
+            "final_capital": round(result.final_capital, 2),
+            "metrics": {
+                "total_trades": result.total_trades,
+                "winning_trades": result.winning_trades,
+                "losing_trades": result.losing_trades,
+                "win_rate": round(result.win_rate, 4),
+                "profit_factor": round(result.profit_factor, 4),
+                "total_net_pnl": round(result.total_net_pnl, 2),
+                "total_return_pct": round(result.total_return_pct, 4),
+                "avg_daily_return_pct": round(result.avg_daily_return_pct, 4),
+                "best_day_pct": round(result.best_day_pct, 4),
+                "worst_day_pct": round(result.worst_day_pct, 4),
+                "max_drawdown_pct": round(result.max_drawdown_pct, 4),
+                "sharpe_ratio": round(result.sharpe_ratio, 4),
+                "avg_win_pct": round(result.avg_win_pct, 6),
+                "avg_loss_pct": round(result.avg_loss_pct, 6),
+                "risk_reward_ratio": round(result.risk_reward_ratio, 4),
+                "total_transaction_costs": round(result.total_transaction_costs, 2),
+                "cost_impact_pct": round(result.cost_impact_pct, 4),
+            },
+            "validation": {
+                "meets_conservative_target": result.meets_conservative_target,
+                "meets_aggressive_target": result.meets_aggressive_target,
+                "validation_passed": result.validation_passed,
+                "details": result.validation_details,
+            },
+            "hourly_breakdown": hourly_breakdown,
+            "equity_curve": [round(v, 2) for v in result.equity_curve],
+            "daily_returns": [round(v, 6) for v in result.daily_returns],
+            "trades": [_trade_dict(t) for t in result.trades],
+        }
+
+        with open(filepath, "w") as f:
+            json.dump(payload, f, indent=2, default=lambda o: None if isinstance(o, float) and (o == float('inf') or o != o) else (o.item() if hasattr(o, 'item') else o))
+
+        logger.info(f"Report saved to {filepath}")
+        return filepath
+
+    def print_walkforward_report(self, wf_result: Dict[str, Any]) -> None:
+        """Print a clean walk-forward validation report"""
+        print("\n" + "=" * 60)
+        print("WALK-FORWARD VALIDATION REPORT")
+        print(f"Symbol: {wf_result['symbol']} | Strategy: {wf_result['strategy']}")
+        print(f"Mode: {wf_result['mode'].upper()} | Folds: {wf_result['n_folds']}")
+        print("=" * 60)
+
+        print(f"\n{'Fold':<6} {'Train':>8} {'Test':>8} {'Trades':>8} {'Win Rate':>10} {'PF':>8} {'Sharpe':>8} {'Status'}")
+        print("-" * 70)
+        for f in wf_result["folds"]:
+            wr = f"{f['win_rate']:.1%}" if f["win_rate"] is not None else "N/A"
+            pf = f"{f['profit_factor']:.2f}" if f["profit_factor"] is not None else "N/A"
+            sh = f"{f['sharpe']:.2f}" if f["sharpe"] is not None else "N/A"
+            print(
+                f"{f['fold']:<6} {f['train_candles']:>8} {f['test_candles']:>8} "
+                f"{f['total_trades']:>8} {wr:>10} {pf:>8} {sh:>8}  {f['status']}"
+            )
+
+        print("-" * 70)
+        print(f"\nAvg Win Rate:  {wf_result['avg_win_rate']:.1%}")
+        print(f"Std Dev:       {wf_result['std_win_rate']:.1%}")
+        stability = "STABLE ✓" if wf_result["stable"] else "UNSTABLE ✗"
+        print(f"Stability:     {stability}")
+        print(f"\nRecommendation: {wf_result['recommendation']}")
+        print("=" * 60)
 
     def print_report(self, result: ScalpBacktestResult):
         """Print a clean backtest report"""
