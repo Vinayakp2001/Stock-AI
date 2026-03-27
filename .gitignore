@@ -19,6 +19,12 @@ etc/
 *.swo
 *~
 
+# Kiro IDE files (specs, steering, settings)
+.kiro/
+
+# Debug/scratch scripts
+debug_*.py
+
 # OS generated files
 .DS_Store
 .DS_Store?
