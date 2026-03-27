@@ -17,6 +17,7 @@ import time
 
 from scalping.config import CONSERVATIVE, AGGRESSIVE, VALIDATION_GATE, COSTS_INDIA, COSTS_US
 from scalping.backtester import ScalpTrade, ScalpBacktestResult
+from scalping.risk.risk_manager import RiskManager
 
 logger = logging.getLogger(__name__)
 
@@ -165,9 +166,14 @@ class PaperTrader:
 
         MAX_OPEN_POSITIONS = 5
 
+        # Instantiate RiskManager for this paper session
+        risk_manager = RiskManager(initial_capital=self.capital)
+
         for timestamp, row in df.iterrows():
             trade_day = timestamp.date() if hasattr(timestamp, 'date') else timestamp
             if trade_day != current_day:
+                if current_day is not None:
+                    risk_manager.reset_day(new_capital=capital)
                 current_day = trade_day
                 daily_count = 0
 
@@ -195,6 +201,7 @@ class PaperTrader:
                 if exit_price is not None:
                     open_trade = self._close_paper_trade(open_trade, exit_price, timestamp, exit_reason)
                     capital += open_trade.net_pnl
+                    risk_manager.record_trade_result(open_trade)
                     trades.append(open_trade)
                     self._persist_stats(trades)
                 else:
@@ -220,14 +227,21 @@ class PaperTrader:
                 else:
                     entry_price = raw_entry * (1 - slippage_pct)
 
+                # Use RiskManager for entry check and position sizing
+                decision = risk_manager.check_entry(
+                    row['signal'], capital, entry_price, timestamp
+                )
+                if not decision['allowed']:
+                    continue
+
+                quantity = decision['quantity']
+
                 # Partial fill: if order > 1% of avg volume, fill at 70%
                 avg_vol = df['Volume'].rolling(20).mean().loc[timestamp] if 'Volume' in df.columns else None
-                base_qty = max(1, int(capital * config['max_risk_per_trade_pct'] / entry_price))
                 if avg_vol and not np.isnan(avg_vol) and avg_vol > 0:
-                    order_value = base_qty * entry_price
+                    order_value = quantity * entry_price
                     if order_value > 0.01 * avg_vol * entry_price:
-                        base_qty = max(1, int(base_qty * 0.70))
-                quantity = base_qty
+                        quantity = max(1, int(quantity * 0.70))
 
                 cost = self._calc_cost(entry_price, quantity) * 2
 
@@ -255,6 +269,7 @@ class PaperTrader:
         last_price = float(df['Close'].iloc[-1])
         for open_trade in open_trades:
             open_trade = self._close_paper_trade(open_trade, last_price, df.index[-1], "END_OF_DAY")
+            risk_manager.record_trade_result(open_trade)
             trades.append(open_trade)
         if open_trades:
             self._persist_stats(trades)

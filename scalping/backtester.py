@@ -18,6 +18,7 @@ from scalping.config import (
     CONSERVATIVE, AGGRESSIVE, VALIDATION_GATE,
     COSTS_INDIA, COSTS_US, DATA_CONFIG
 )
+from scalping.risk.risk_manager import RiskManager
 
 logger = logging.getLogger(__name__)
 
@@ -192,10 +193,15 @@ class ScalpingBacktester:
         daily_trade_count = 0
         current_day = None
 
+        # Instantiate RiskManager for this backtest run
+        risk_manager = RiskManager(initial_capital=self.initial_capital)
+
         for i, (timestamp, row) in enumerate(df.iterrows()):
-            # Reset daily trade count
+            # Reset daily trade count and risk manager on day boundary
             trade_day = timestamp.date() if hasattr(timestamp, 'date') else timestamp
             if trade_day != current_day:
+                if current_day is not None:
+                    risk_manager.reset_day(new_capital=capital)
                 current_day = trade_day
                 daily_trade_count = 0
 
@@ -229,6 +235,7 @@ class ScalpingBacktester:
                             open_trade, exit_price, timestamp, exit_reason
                         )
                         capital += open_trade.net_pnl
+                        risk_manager.record_trade_result(open_trade)
                         trades.append(open_trade)
                         open_trade = None
                         open_trade_entry_idx = -1
@@ -252,10 +259,14 @@ class ScalpingBacktester:
                 if row['signal'] == 'SELL' and stop_loss <= entry_price:
                     continue
 
-                quantity = self._calculate_quantity(
-                    capital, entry_price, config['max_risk_per_trade_pct']
+                # Use RiskManager for entry check and position sizing
+                decision = risk_manager.check_entry(
+                    row['signal'], capital, entry_price, timestamp
                 )
+                if not decision['allowed']:
+                    continue
 
+                quantity = decision['quantity']
                 if quantity > 0:
                     cost = self.calculate_transaction_cost(entry_price, quantity)
                     open_trade = ScalpTrade(
@@ -284,6 +295,7 @@ class ScalpingBacktester:
             open_trade = self._close_trade(
                 open_trade, last_price, df.index[-1], "END_OF_DAY"
             )
+            risk_manager.record_trade_result(open_trade)
             trades.append(open_trade)
 
         return trades
