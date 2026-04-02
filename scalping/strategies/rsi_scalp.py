@@ -7,9 +7,10 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 from scalping.config import SIGNAL_CONFIG
+from scalping.strategies.base import BaseStrategy, IndicatorUtils
 
 
-class RSIScalpStrategy:
+class RSIScalpStrategy(BaseStrategy):
     """
     RSI-based scalping strategy using divergence and extreme levels.
 
@@ -26,7 +27,8 @@ class RSIScalpStrategy:
     - EMA 9 < EMA 21 (trend filter)
     """
 
-    def __init__(self, rsi_period: int = 14, oversold: int = 35, overbought: int = 65):
+    def __init__(self, rsi_period: int = 14, oversold: int = 35, overbought: int = 65, params: dict = None):
+        super().__init__(params=params)
         self.rsi_period = rsi_period
         self.oversold = oversold
         self.overbought = overbought
@@ -36,33 +38,25 @@ class RSIScalpStrategy:
         df = data.copy()
 
         # RSI
-        delta = df['Close'].diff()
-        gain = delta.where(delta > 0, 0).rolling(self.rsi_period).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(self.rsi_period).mean()
-        rs = gain / loss.replace(0, np.nan)
-        df['rsi'] = 100 - (100 / (1 + rs))
+        df['rsi'] = IndicatorUtils.rsi(df['Close'], self.rsi_period)
 
         # RSI crossover signals
         df['rsi_cross_up'] = (df['rsi'] > self.oversold) & (df['rsi'].shift(1) <= self.oversold)
         df['rsi_cross_down'] = (df['rsi'] < self.overbought) & (df['rsi'].shift(1) >= self.overbought)
 
         # EMAs for trend filter
-        df['ema_9'] = df['Close'].ewm(span=9, adjust=False).mean()
-        df['ema_21'] = df['Close'].ewm(span=21, adjust=False).mean()
+        df['ema_9'] = IndicatorUtils.ema(df['Close'], 9)
+        df['ema_21'] = IndicatorUtils.ema(df['Close'], 21)
         df['trend_up'] = df['ema_9'] > df['ema_21']
 
         # VWAP
-        df['vwap'] = (df['Close'] * df['Volume']).cumsum() / df['Volume'].cumsum()
+        df['vwap'] = IndicatorUtils.vwap(df)
 
         # Volume ratio
-        df['volume_avg'] = df['Volume'].rolling(20).mean()
-        df['volume_ratio'] = df['Volume'] / df['volume_avg']
+        df['volume_ratio'] = IndicatorUtils.volume_ratio(df, 20)
 
         # ATR
-        high_low = df['High'] - df['Low']
-        high_close = (df['High'] - df['Close'].shift()).abs()
-        low_close = (df['Low'] - df['Close'].shift()).abs()
-        df['atr'] = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1).rolling(14).mean()
+        df['atr'] = IndicatorUtils.atr(df, 14)
 
         # RSI divergence detection (simplified)
         df['price_lower_low'] = (df['Close'] < df['Close'].shift(5)) & (df['Close'].shift(5) < df['Close'].shift(10))
@@ -150,4 +144,5 @@ class RSIScalpStrategy:
             "rsi_period": self.rsi_period,
             "oversold": self.oversold,
             "overbought": self.overbought,
+            "params": self.params,
         }

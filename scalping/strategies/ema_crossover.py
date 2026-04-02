@@ -8,9 +8,10 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 from scalping.config import SIGNAL_CONFIG
+from scalping.strategies.base import BaseStrategy, IndicatorUtils
 
 
-class EMACrossoverStrategy:
+class EMACrossoverStrategy(BaseStrategy):
     """
     EMA 9/21 crossover strategy with strong whipsaw filters.
 
@@ -30,7 +31,8 @@ class EMACrossoverStrategy:
     - Price below VWAP
     """
 
-    def __init__(self, fast: int = 9, slow: int = 21):
+    def __init__(self, fast: int = 9, slow: int = 21, params: dict = None):
+        super().__init__(params=params)
         self.fast = fast
         self.slow = slow
         self.name = f"EMA_{fast}_{slow}_Crossover"
@@ -40,8 +42,8 @@ class EMACrossoverStrategy:
         df = data.copy()
 
         # 1-min EMAs
-        df['ema_fast'] = df['Close'].ewm(span=self.fast, adjust=False).mean()
-        df['ema_slow'] = df['Close'].ewm(span=self.slow, adjust=False).mean()
+        df['ema_fast'] = IndicatorUtils.ema(df['Close'], self.fast)
+        df['ema_slow'] = IndicatorUtils.ema(df['Close'], self.slow)
 
         # EMA crossover
         df['ema_diff'] = df['ema_fast'] - df['ema_slow']
@@ -52,40 +54,21 @@ class EMACrossoverStrategy:
         df['ema_diff_growing'] = df['ema_diff'].abs() > df['ema_diff'].abs().shift(1)
 
         # 5-min trend using 5-period rolling EMA on 1-min data
-        df['ema_fast_5m'] = df['Close'].ewm(span=self.fast * 5, adjust=False).mean()
-        df['ema_slow_5m'] = df['Close'].ewm(span=self.slow * 5, adjust=False).mean()
+        df['ema_fast_5m'] = IndicatorUtils.ema(df['Close'], self.fast * 5)
+        df['ema_slow_5m'] = IndicatorUtils.ema(df['Close'], self.slow * 5)
         df['trend_5m_up'] = df['ema_fast_5m'] > df['ema_slow_5m']
 
         # RSI (14 period)
-        delta = df['Close'].diff()
-        gain = delta.where(delta > 0, 0).rolling(14).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-        rs = gain / loss.replace(0, np.nan)
-        df['rsi'] = 100 - (100 / (1 + rs))
+        df['rsi'] = IndicatorUtils.rsi(df['Close'], 14)
 
         # VWAP - reset per day
-        df['date'] = df.index.date
-        df['vwap'] = (
-            (df['Close'] * df['Volume'])
-            .groupby(df['date'])
-            .cumsum()
-            / df['Volume'].groupby(df['date']).cumsum()
-        )
+        df['vwap'] = IndicatorUtils.vwap(df)
 
         # Volume ratio
-        df['volume_avg'] = df['Volume'].rolling(20).mean()
-        df['volume_ratio'] = df['Volume'] / df['volume_avg'].replace(0, np.nan)
+        df['volume_ratio'] = IndicatorUtils.volume_ratio(df, 20)
 
         # ATR
-        high_low = df['High'] - df['Low']
-        high_close = (df['High'] - df['Close'].shift()).abs()
-        low_close = (df['Low'] - df['Close'].shift()).abs()
-        df['atr'] = (
-            pd.concat([high_low, high_close, low_close], axis=1)
-            .max(axis=1)
-            .rolling(14)
-            .mean()
-        )
+        df['atr'] = IndicatorUtils.atr(df, 14)
 
         # Price momentum (last 3 candles direction)
         df['price_momentum'] = df['Close'] - df['Close'].shift(3)
@@ -178,4 +161,5 @@ class EMACrossoverStrategy:
             "confirmation": "5m trend + Volume + RSI + VWAP + Momentum",
             "fast_ema": self.fast,
             "slow_ema": self.slow,
+            "params": self.params,
         }

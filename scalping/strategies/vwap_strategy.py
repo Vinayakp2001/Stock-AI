@@ -8,9 +8,10 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 from scalping.config import SIGNAL_CONFIG
+from scalping.strategies.base import BaseStrategy, IndicatorUtils
 
 
-class VWAPStrategy:
+class VWAPStrategy(BaseStrategy):
     """
     VWAP Bounce strategy.
 
@@ -27,15 +28,16 @@ class VWAPStrategy:
     - RSI not oversold (>35)
     """
 
-    def __init__(self, deviation_pct: float = 0.001):
-        self.deviation_pct = deviation_pct  # How close to VWAP to trigger
+    def __init__(self, deviation_pct: float = 0.001, params: dict = None):
+        super().__init__(params=params)
+        self.deviation_pct = deviation_pct
         self.name = "VWAP_Bounce"
 
     def calculate_indicators(self, data: pd.DataFrame) -> pd.DataFrame:
         df = data.copy()
 
         # VWAP - resets each day
-        df['vwap'] = (df['Close'] * df['Volume']).cumsum() / df['Volume'].cumsum()
+        df['vwap'] = IndicatorUtils.vwap(df)
 
         # VWAP bands (standard deviation bands)
         df['vwap_std'] = df['Close'].rolling(20).std()
@@ -49,21 +51,13 @@ class VWAPStrategy:
         df['roc'] = df['Close'].pct_change(3)
 
         # RSI
-        delta = df['Close'].diff()
-        gain = delta.where(delta > 0, 0).rolling(14).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
-        rs = gain / loss.replace(0, np.nan)
-        df['rsi'] = 100 - (100 / (1 + rs))
+        df['rsi'] = IndicatorUtils.rsi(df['Close'], 14)
 
         # Volume ratio
-        df['volume_avg'] = df['Volume'].rolling(20).mean()
-        df['volume_ratio'] = df['Volume'] / df['volume_avg']
+        df['volume_ratio'] = IndicatorUtils.volume_ratio(df, 20)
 
         # ATR
-        high_low = df['High'] - df['Low']
-        high_close = (df['High'] - df['Close'].shift()).abs()
-        low_close = (df['Low'] - df['Close'].shift()).abs()
-        df['atr'] = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1).rolling(14).mean()
+        df['atr'] = IndicatorUtils.atr(df, 14)
 
         # Near VWAP flag
         df['near_vwap'] = df['vwap_distance'].abs() <= self.deviation_pct
@@ -141,4 +135,5 @@ class VWAPStrategy:
             "timeframe": "1m",
             "confirmation": "Volume + RSI + Price momentum",
             "deviation_pct": self.deviation_pct,
+            "params": self.params,
         }
