@@ -33,8 +33,8 @@ After all issues are done, integrate Zerodha WebSocket, TrueData API, and Auto T
 | 1 | Improve Scalping Strategy Win Rate to 60%+ | #56 | 🟢 DONE | `.kiro/specs/scalping-win-rate/` |
 | 2 | Enhanced Backtesting and Paper Trading Platform | #48 | 🟢 DONE | `.kiro/specs/backtesting-platform/` |
 | 3 | Build Comprehensive Risk Management Module | #4 | 🟢 DONE | `.kiro/specs/risk-management/` |
-| 4 | Implement Flexible Trading Strategy Framework | #5 | 🔴 TODO | - |
-| 5 | Build Comprehensive Multi-Factor Stock Scoring System | #3 | 🔴 TODO | - |
+| 4 | Implement Flexible Trading Strategy Framework | #5 | 🟢 DONE | `.kiro/specs/trading-strategy-framework/` |
+| 5 | Build Comprehensive Multi-Factor Stock Scoring System | #3 | 🟢 DONE | `.kiro/specs/multi-factor-scoring/` |
 | 6 | Implement Fundamental Analysis Engine | #1 | 🔴 TODO | - |
 | 7 | Add News and Social Media Sentiment Analysis | #2 | 🔴 TODO | - |
 | 8 | Create Universal Broker API Interface | #6 | 🔴 TODO | - |
@@ -128,8 +128,8 @@ gh issue close 56 --repo Vinayakp2001/Stock-AI --comment "Scalping strategy impr
 ## Current Progress
 
 - Total Issues: 26
-- Completed: 3
+- Completed: 5
 - In Progress: 0
-- Remaining: 23
+- Remaining: 21
 
-**Next Issue: #5 - Implement Flexible Trading Strategy Framework**
+**Next Issue: #1 - Implement Fundamental Analysis Engine**

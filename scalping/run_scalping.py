@@ -6,6 +6,7 @@ Quick way to run backtests and paper trading from command line
 import argparse
 import sys
 import os
+import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scalping.backtester import ScalpingBacktester
@@ -181,6 +182,44 @@ def run_validation(capital: float = 100000):
     return report
 
 
+def run_score(symbols_str: str, capital: float):
+    """
+    Score and rank a comma-separated list of symbols using TradingDecisionEngine.
+    Req 6.3
+    """
+    import yfinance as yf
+    from trading.decision_engine import TradingDecisionEngine
+
+    symbols = [s.strip() for s in symbols_str.split(",") if s.strip()]
+    if not symbols:
+        print("No symbols provided. Use --symbols RELIANCE.NS,TCS.NS")
+        return
+
+    print(f"\nFetching 1m data for: {', '.join(symbols)} ...")
+    data_map = {}
+    for sym in symbols:
+        try:
+            df = yf.download(sym, period="1d", interval="1m", progress=False, auto_adjust=True)
+            if df.empty:
+                print(f"  WARNING: No data for {sym} — skipping")
+            else:
+                # Flatten MultiIndex columns if present
+                if isinstance(df.columns, pd.MultiIndex):
+                    df.columns = df.columns.get_level_values(0)
+                data_map[sym] = df
+                print(f"  {sym}: {len(df)} candles")
+        except Exception as e:
+            print(f"  ERROR fetching {sym}: {e}")
+
+    if not data_map:
+        print("No data available for any symbol.")
+        return
+
+    engine = TradingDecisionEngine(initial_capital=capital)
+    results = engine.rank_symbols(list(data_map.keys()), data_map, capital=capital)
+    engine.print_report(results)
+
+
 def run_batch(mode, capital):
     """Run all strategies on all NSE recommended stocks."""
     symbols = RECOMMENDED_STOCKS['NSE']
@@ -240,8 +279,9 @@ def run_compare(symbol, mode, capital, save_report=False):
 
 def main():
     parser = argparse.ArgumentParser(description="Scalping Module Runner")
-    parser.add_argument("--mode", choices=["backtest", "paper", "validate", "batch", "walkforward"], default="backtest")
+    parser.add_argument("--mode", choices=["backtest", "paper", "validate", "batch", "walkforward", "score"], default="backtest")
     parser.add_argument("--symbol", default="RELIANCE.NS")
+    parser.add_argument("--symbols", default="RELIANCE.NS,TCS.NS,HDFCBANK.NS", help="Comma-separated symbols for --mode score")
     parser.add_argument("--strategy", choices=["ema", "vwap", "rsi", "improved"], default="ema")
     parser.add_argument("--trading-mode", choices=["conservative", "aggressive"], default="conservative")
     parser.add_argument("--capital", type=float, default=100000)
@@ -277,6 +317,8 @@ def main():
         run_batch(args.trading_mode, args.capital)
     elif args.mode == "walkforward":
         run_walkforward(args.symbol, args.strategy, args.trading_mode, args.capital)
+    elif args.mode == "score":
+        run_score(args.symbols, args.capital)
 
 
 if __name__ == "__main__":
