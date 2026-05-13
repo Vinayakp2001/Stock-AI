@@ -57,6 +57,7 @@ class TradingDecisionEngine:
         self._ml_confirmer = None
         self._risk_manager = None
         self._fundamental_analyzer = None  # lazy-init (Requirement 5.1)
+        self._sentiment_analyzer = None   # lazy-init (Issue #2)
 
     # ── Public API ────────────────────────────────────────────────────────
 
@@ -86,8 +87,9 @@ class TradingDecisionEngine:
         if scores["fundamental"] is not None:
             available.append("fundamental")
 
-        scores["sentiment"] = None
-        logger.warning("Sentiment component unavailable — requires Issue #2")
+        scores["sentiment"] = self._score_sentiment(symbol)
+        if scores["sentiment"] is not None:
+            available.append("sentiment")
 
         effective_weights = self._redistribute_weights(available)
         total_score = sum(scores[k] * effective_weights[k] for k in available)
@@ -168,6 +170,17 @@ class TradingDecisionEngine:
 
 
     # ── Component Scorers ─────────────────────────────────────────────────
+
+    def _score_sentiment(self, symbol: str) -> Optional[float]:
+        """Lazy-init SentimentAnalyzer and return 0-100 score."""
+        try:
+            if self._sentiment_analyzer is None:
+                from agents.sentiment_agent import SentimentAnalyzer
+                self._sentiment_analyzer = SentimentAnalyzer()
+            return self._sentiment_analyzer.get_sentiment_score(symbol)
+        except Exception as exc:
+            logger.warning("Sentiment score failed: %s — weight redistributed", exc)
+            return None
 
     def _score_fundamental(self, symbol: str) -> Optional[float]:
         """Lazy-init FundamentalAnalyzer and return 0-100 score (Requirement 5.1)."""

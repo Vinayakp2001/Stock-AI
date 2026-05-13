@@ -35,8 +35,8 @@ After all issues are done, integrate Zerodha WebSocket, TrueData API, and Auto T
 | 3 | Build Comprehensive Risk Management Module | #4 | 🟢 DONE | `.kiro/specs/risk-management/` |
 | 4 | Implement Flexible Trading Strategy Framework | #5 | 🟢 DONE | `.kiro/specs/trading-strategy-framework/` |
 | 5 | Build Comprehensive Multi-Factor Stock Scoring System | #3 | 🟢 DONE | `.kiro/specs/multi-factor-scoring/` |
-| 6 | Implement Fundamental Analysis Engine | #1 | 🔴 TODO | - |
-| 7 | Add News and Social Media Sentiment Analysis | #2 | 🔴 TODO | - |
+| 6 | Implement Fundamental Analysis Engine | #1 | 🟢 DONE | `.kiro/specs/fundamental-analysis/` |
+| 7 | Add News and Social Media Sentiment Analysis | #2 | 🟢 DONE | `.kiro/specs/sentiment-analysis/` |
 | 8 | Create Universal Broker API Interface | #6 | 🔴 TODO | - |
 | 9 | Implement Zerodha Kite Connect Integration | #7 | 🔴 TODO | - |
 | 10 | Implement Alpaca API Integration | #8 | 🔴 TODO | - |
