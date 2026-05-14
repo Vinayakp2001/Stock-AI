@@ -101,6 +101,13 @@ class PaperBroker(BrokerBase):
         elif order.side == OrderSide.SELL:
             pos = self._positions.get(order.symbol)
             if pos is None or pos.quantity < order.quantity:
+                # STOP and LIMIT exit orders are stored as OPEN (bracket legs)
+                if order.order_type in (OrderType.STOP, OrderType.STOP_LIMIT, OrderType.LIMIT):
+                    order.status = OrderStatus.OPEN
+                    order.created_at = datetime.now()
+                    self._orders[order.order_id] = order
+                    logger.debug("PaperBroker: bracket exit order stored as OPEN for %s", order.symbol)
+                    return order
                 logger.warning("PaperBroker: insufficient position for %s", order.symbol)
                 order.status = OrderStatus.REJECTED
                 self._orders[order.order_id] = order
