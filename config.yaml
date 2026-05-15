@@ -1,0 +1,54 @@
+# Stock AI — Central Configuration
+# Environment variables override any value here.
+# Format: STOCKAI_<SECTION>_<KEY> (uppercase, underscores)
+# Example: STOCKAI_BROKER_ALPACA_API_KEY=xxx
+
+broker:
+  default: paper          # paper | zerodha | alpaca
+  alpaca_api_key: ""      # override: STOCKAI_BROKER_ALPACA_API_KEY
+  alpaca_secret_key: ""   # override: STOCKAI_BROKER_ALPACA_SECRET_KEY
+  alpaca_base_url: "https://paper-api.alpaca.markets"
+  zerodha_api_key: ""     # override: STOCKAI_BROKER_ZERODHA_API_KEY
+  zerodha_access_token: ""
+
+trading:
+  initial_capital: 100000
+  market: NSE             # NSE | NYSE
+  default_symbol: RELIANCE.NS
+  position_size_pct: 20   # % of capital per trade
+  max_position_size_pct: 30
+
+risk:
+  max_daily_loss_pct: 3.0
+  max_drawdown_pct: 10.0
+  max_consecutive_losses: 5
+  max_trades_per_day: 20
+  max_trades_per_minute: 10
+
+scalping:
+  default_strategy: ema   # ema | vwap | rsi | improved
+  mode: conservative      # conservative | aggressive
+  min_signal_score: 70
+  probability_threshold: 0.55
+  min_hold_candles: 3
+
+ml:
+  min_accuracy: 0.55
+  min_samples: 500
+  retrain_interval: 50
+  model_path: models/scalping/signal_classifier.joblib
+
+alerts:
+  email_to: ""            # override: STOCKAI_ALERTS_EMAIL_TO
+  email_from: ""          # override: STOCKAI_ALERTS_EMAIL_FROM
+  smtp_host: smtp.gmail.com
+  smtp_port: 587
+  smtp_user: ""           # override: STOCKAI_ALERTS_SMTP_USER
+  smtp_pass: ""           # override: STOCKAI_ALERTS_SMTP_PASS
+  min_level: INFO         # INFO | WARNING | CRITICAL
+
+data:
+  period: 7d
+  interval: 1m
+  daily_period: 1y
+  daily_interval: 1d
