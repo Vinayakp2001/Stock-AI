@@ -119,8 +119,12 @@ class RiskManager:
             return self._block("MAX_DRAWDOWN", 0.0)
 
         # ── Rule 4: Consecutive loss cooldown ─────────────────────────────────
-        if self._cooldown_until is not None and timestamp < self._cooldown_until:
-            return self._block("CONSECUTIVE_LOSS_COOLDOWN", 0.0)
+        if self._cooldown_until is not None and timestamp is not None:
+            # Normalise both to naive UTC for comparison
+            ts = timestamp.replace(tzinfo=None) if hasattr(timestamp, 'tzinfo') and timestamp.tzinfo else timestamp
+            cu = self._cooldown_until.replace(tzinfo=None) if hasattr(self._cooldown_until, 'tzinfo') and self._cooldown_until.tzinfo else self._cooldown_until
+            if ts < cu:
+                return self._block("CONSECUTIVE_LOSS_COOLDOWN", 0.0)
 
         # ── All clear: compute position size ─────────────────────────────────
         effective_risk_pct = self._base_risk_pct
