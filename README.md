@@ -1,265 +1,170 @@
-# Stock AI - Autonomous Trading Bot
+# Stock AI — Autonomous Trading Bot
 
-A comprehensive stock prediction and analysis system with continuous learning capabilities that automatically improves prediction accuracy over time. The system is designed to evolve into a fully autonomous trading bot capable of achieving 60-70% win rate through advanced machine learning and multi-factor analysis.
+An autonomous trading bot with ML-based price prediction, multi-factor scoring, scalping strategies, risk management, and a full broker API layer.
 
-## Key Features
+## Dashboards
 
-### Prediction & Analysis
-- **Price Prediction**: ML-based price forecasting with confidence scores using multiple models (Random Forest, XGBoost, LightGBM, Gradient Boosting, Linear Regression)
-- **Technical Analysis**: 15+ technical indicators including MACD, RSI, Bollinger Bands, Moving Averages, Stochastic Oscillator
-- **Backtesting**: Strategy testing with detailed performance metrics and multiple trading strategies
-- **Prediction Accuracy**: Real-time accuracy tracking and improvement recommendations
-
-### Learning System
-- **Automatic Tracking**: Every prediction is tracked and analyzed for continuous improvement
-- **Pattern Recognition**: Identifies factors affecting prediction accuracy using clustering and statistical analysis
-- **Continuous Improvement**: Provides specific recommendations for model enhancement
-- **Accuracy Progression**: Shows measurable improvements over time with detailed metrics
-
-### Dashboard Interface
-- **Interactive Charts**: Real-time visualization of predictions and accuracy using Plotly
-- **Comprehensive Metrics**: Detailed performance analysis with Sharpe ratio, win rate, drawdown metrics
-- **Multi-Analysis Support**: Price prediction, technical analysis, backtesting, accuracy analysis
-- **Responsive Design**: Modern web interface built with Dash and Bootstrap
+| Dashboard | Port | Command |
+|-----------|------|---------|
+| Prediction & Analysis | 8050 | `python app_fresh.py` |
+| Scalping Module | 8051 | `python scalping/dashboard.py` |
+| Trading Bot | 8052 | `python trading/dashboard.py` |
 
 ## Quick Start
 
-### Installation
 ```bash
-# Clone the repository
 git clone https://github.com/Vinayakp2001/Stock-AI.git
 cd Stock-AI
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+python -m venv stock_env
+stock_env\Scripts\activate   # Windows
 pip install -r requirements.txt
-```
-
-### Running the Application
-```bash
-# Start the dashboard
 python app_fresh.py
-
-# Access the system at http://localhost:8050
 ```
-
-### Basic Usage
-1. **Price Prediction**: Select stocks and timeframes for ML-based forecasts
-2. **Technical Analysis**: View comprehensive technical indicators and charts
-3. **Backtesting**: Test trading strategies on historical data
-4. **Prediction Accuracy**: Monitor and analyze prediction performance
 
 ## Project Structure
 
 ```
 Stock-AI/
-├── agents/                         # Core system components
-│   ├── data_agent.py              # Data fetching and preprocessing
-│   └── prediction_agent.py        # Machine learning predictions
-├── backtesting/                    # Strategy testing framework
-│   └── engine.py                  # Backtesting engine with multiple strategies
-├── data/                          # Data storage
-│   ├── predictions/               # Prediction tracking data
-│   └── learning/                  # Learning insights and analysis
-├── models/                        # Trained ML models storage
-├── app_fresh.py                   # Main dashboard application
-├── prediction_tracker.py          # Prediction tracking system
-├── prediction_accuracy_dashboard.py # Accuracy analysis dashboard
-├── accuracy_learning_engine.py    # Learning and improvement engine
-├── update_actual_prices.py        # Automated price updates
-├── main.py                        # Command-line interface
-└── requirements.txt               # Project dependencies
+├── agents/
+│   ├── data_agent.py           # Data fetching & preprocessing
+│   ├── prediction_agent.py     # ML price prediction
+│   ├── fundamental_agent.py    # Fundamental analysis (12 ratios, 0-100 score)
+│   └── sentiment_agent.py      # News sentiment via yfinance + TextBlob
+│
+├── brokers/
+│   ├── base_broker.py          # Abstract broker interface
+│   ├── paper_broker.py         # Paper trading (no API key needed)
+│   ├── zerodha_broker.py       # Zerodha Kite Connect
+│   └── alpaca_broker.py        # Alpaca API
+│
+├── scalping/
+│   ├── strategies/             # EMA, VWAP, RSI, Improved (5-layer filter)
+│   ├── filters/                # Regime filter, session filter
+│   ├── ml/                     # ML signal confirmer (RandomForest)
+│   ├── risk/                   # Risk manager, adaptive stop-loss
+│   ├── backtester.py           # Scalping backtester with cost modeling
+│   ├── batch_backtester.py     # Multi-symbol batch backtesting
+│   ├── paper_trader.py         # Paper trading with validation gate
+│   ├── ensemble_scorer.py      # Multi-strategy ensemble scoring
+│   └── run_scalping.py         # CLI entry point
+│
+├── trading/
+│   ├── decision_engine.py      # 5-component weighted scoring (0-100)
+│   ├── market_regime.py        # BULL/BEAR/SIDEWAYS/VOLATILE detection
+│   ├── order_executor.py       # Bracket orders, retry, chunking
+│   ├── position_manager.py     # Trailing stops, time exits, daily P&L halt
+│   ├── portfolio_optimizer.py  # MPT — max Sharpe, min volatility, efficient frontier
+│   ├── continuous_learner.py   # Auto-retrains ML model as trades accumulate
+│   ├── alert_system.py         # Console + email alerts for signals & risk events
+│   ├── safety_controller.py    # Kill switch + circuit breakers
+│   ├── config_manager.py       # YAML config with env var overrides
+│   └── dashboard.py            # Trading bot dashboard (port 8052)
+│
+├── tests/                      # pytest test suite (25 tests)
+├── config.yaml                 # Central configuration
+├── app_fresh.py                # Prediction dashboard (port 8050)
+└── scalping/dashboard.py       # Scalping dashboard (port 8051)
 ```
 
-## Architecture Overview
+## Scalping Module
 
-### Data Collection & Processing
-- **Real-time Data**: Yahoo Finance integration for market data
-- **Technical Indicators**: 15+ indicators using TA-Lib
-- **Feature Engineering**: 40+ derived features for ML models
-- **Data Caching**: Intelligent caching to reduce API calls
-
-### Machine Learning Pipeline
-- **Multiple Models**: Random Forest, XGBoost, LightGBM, Gradient Boosting, Linear Regression
-- **Ensemble Methods**: Weighted predictions from multiple models
-- **Multi-timeframe Analysis**: 1-day, 1-week, 1-month predictions
-- **Confidence Scoring**: Model performance-based confidence intervals
-
-### Backtesting Framework
-- **Strategy Testing**: Moving Average, RSI, MACD strategies
-- **Performance Metrics**: Sharpe ratio, maximum drawdown, win rate, profit factor
-- **Risk Analysis**: Comprehensive risk-adjusted return calculations
-- **Historical Validation**: Multi-year backtesting capabilities
-
-### Learning & Improvement
-- **Prediction Tracking**: Automatic tracking of all predictions vs actual outcomes
-- **Error Analysis**: Pattern recognition in prediction errors using clustering
-- **Performance Attribution**: Detailed analysis of what drives accuracy
-- **Continuous Learning**: Automatic model retraining and parameter optimization
-
-## Usage Examples
-
-### Command Line Interface
+### Run a Backtest
 ```bash
-# Analyze a specific stock
-python main.py --symbol AAPL --period 6mo --indicators
-
-# Run backtesting
-python main.py --symbol RELIANCE.NS --backtest
-
-# Compare multiple stocks
-python main.py --compare AAPL GOOGL MSFT --period 1y
-
-# Run comprehensive demo
-python main.py --demo
+python scalping/run_scalping.py --mode backtest --symbol RELIANCE.NS --strategy ema
+python scalping/run_scalping.py --mode backtest --symbol RELIANCE.NS --strategy improved
 ```
 
-### Dashboard Interface
-1. **Stock Selection**: Choose from US stocks, Indian stocks, or market indices
-2. **Analysis Type**: Select prediction, technical analysis, backtesting, or accuracy analysis
-3. **Time Period**: Configure analysis period from 1 month to 2 years
-4. **Real-time Results**: View interactive charts and detailed metrics
+### Strategies
+| Strategy | Description |
+|----------|-------------|
+| `ema` | EMA 9/21 crossover |
+| `vwap` | VWAP bounce with volume confirmation |
+| `rsi` | RSI 35/65 with momentum filter |
+| `improved` | 5-layer filter: regime + session + ADX + volume + ML |
 
-### Prediction Tracking
+### Benchmark Targets
+| Mode | Win Rate | Daily Net | Monthly |
+|------|----------|-----------|---------|
+| Conservative | 62%+ | 1-2% | 20-40% |
+| Aggressive | 67%+ | 2-3% | 40-60% |
+| Validation Gate | 60%+ | — | — |
+
+## Trading Module
+
+### Decision Engine
+Combines 5 components into a 0-100 score:
+- Technical (30%) — ensemble of scalping strategies
+- Fundamental (25%) — 12 financial ratios
+- Sentiment (15%) — news sentiment
+- ML Prediction (20%) — RandomForest signal probability
+- Risk Metrics (10%) — drawdown & consecutive loss state
+
+### Portfolio Optimizer
+```python
+from trading.portfolio_optimizer import PortfolioOptimizer
+opt = PortfolioOptimizer(['RELIANCE.NS', 'TCS.NS', 'INFY.NS'], period='1y')
+result = opt.optimize()
+opt.print_report(result)
+```
+
+### Alert System
+```python
+from trading.alert_system import AlertSystem
+alerts = AlertSystem(email_to='you@example.com')  # optional email
+alerts.trade_signal('RELIANCE.NS', 'BUY', 72.5, 1360, 1347, 1387)
+alerts.risk_breach('DRAWDOWN', 4.5, 3.0)
+alerts.regime_change('BULL', 'VOLATILE', 0.75, 'TRADE_CAUTIOUS')
+```
+
+### Safety Controller
+```python
+from trading.safety_controller import SafetyController
+sc = SafetyController(initial_capital=100_000)
+if sc.check_trade(capital, position_size):
+    # place order
+    sc.record_trade_result(pnl, new_capital)
+```
+
+## Configuration
+
+Edit `config.yaml` or use environment variables:
+
 ```bash
-# Update actual prices for completed predictions
-python update_actual_prices.py --update
-
-# View accuracy summary
-python update_actual_prices.py --summary
-
-# Get improvement recommendations
-python update_actual_prices.py --recommendations
+# Override any config value
+set STOCKAI_TRADING_INITIAL_CAPITAL=200000
+set STOCKAI_BROKER_DEFAULT=alpaca
+set STOCKAI_ALERTS_EMAIL_TO=you@example.com
 ```
 
-## Technical Specifications
+## Brokers
 
-### Supported Markets
-- **US Markets**: NYSE, NASDAQ (AAPL, GOOGL, MSFT, TSLA, etc.)
-- **Indian Markets**: NSE, BSE (RELIANCE.NS, TCS.NS, INFY.NS, etc.)
-- **Market Indices**: S&P 500, NASDAQ, Dow Jones, NIFTY, SENSEX
+| Broker | Env Vars Required |
+|--------|-------------------|
+| Paper (default) | None |
+| Zerodha | `ZERODHA_API_KEY`, `ZERODHA_ACCESS_TOKEN` |
+| Alpaca | `ALPACA_API_KEY`, `ALPACA_SECRET_KEY` |
 
-### Machine Learning Models
-- **Random Forest**: Ensemble learning with 200 estimators
-- **XGBoost**: Gradient boosting with advanced regularization
-- **LightGBM**: Fast gradient boosting framework
-- **Gradient Boosting**: Sequential ensemble method
-- **Linear Regression**: Baseline model with feature scaling
+## Testing
 
-### Technical Indicators
-- **Trend**: SMA, EMA, MACD, ADX
-- **Momentum**: RSI, Stochastic, Williams %R, CCI
-- **Volatility**: Bollinger Bands, ATR
-- **Volume**: OBV, Volume SMA
-- **Custom**: Price patterns, volatility measures, momentum features
+```bash
+pip install pytest
+python -m pytest tests/ -v
+```
 
-### Performance Metrics
-- **Accuracy**: Percentage of correct predictions
-- **Sharpe Ratio**: Risk-adjusted returns
-- **Maximum Drawdown**: Largest peak-to-trough decline
-- **Win Rate**: Percentage of profitable trades
-- **Profit Factor**: Ratio of gross profits to gross losses
-- **Confidence Correlation**: Relationship between confidence and accuracy
+25 tests covering: RiskManager, SafetyController, AlertSystem, ConfigManager, PortfolioOptimizer.
 
-## Expected Outcomes
+## Key Technical Decisions
 
-### Accuracy Improvement Timeline
-- **Month 1**: 5-10% accuracy improvement through basic learning
-- **Month 2**: 10-15% accuracy improvement with pattern recognition
-- **Month 3**: 15-20% accuracy improvement with advanced optimization
-- **Month 4+**: 20-25% accuracy improvement with continuous learning
-
-### Performance Targets
-- **Win Rate**: Target 60-70% for autonomous trading
-- **Sharpe Ratio**: Target >1.5 for risk-adjusted returns
-- **Maximum Drawdown**: Keep below 15% for capital protection
-- **Prediction Accuracy**: Achieve >75% directional accuracy
-
-## Development Roadmap
-
-### Phase 1: Foundation Enhancement
-- Add fundamental analysis (P/E ratios, financial metrics)
-- Implement sentiment analysis (news, social media)
-- Build multi-factor scoring system
-- Enhance risk management framework
-
-### Phase 2: Autonomous Trading
-- Integrate broker APIs (Zerodha, Alpaca)
-- Implement order execution system
-- Add position management
-- Build safety controls and circuit breakers
-
-### Phase 3: Advanced Features
-- Portfolio optimization
-- Market regime detection
-- Advanced learning algorithms
-- Mobile application
-
-## Contributing
-
-We welcome contributions from the community! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
-
-- Setting up the development environment
-- Code style and testing requirements
-- Issue reporting and feature requests
-- Pull request process
-- Community guidelines
-
-### Quick Start for Contributors
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests
-4. Submit a pull request
-
-See our [GitHub Issues](https://github.com/Vinayakp2001/Stock-AI/issues) for current development priorities.
-
-## Dependencies
-
-### Core Libraries
-- **pandas**: Data manipulation and analysis
-- **numpy**: Numerical computing
-- **scikit-learn**: Machine learning algorithms
-- **xgboost**: Gradient boosting framework
-- **lightgbm**: Fast gradient boosting
-- **yfinance**: Yahoo Finance data
-- **ta**: Technical analysis indicators
-
-### Visualization & Dashboard
-- **dash**: Web application framework
-- **plotly**: Interactive plotting
-- **dash-bootstrap-components**: UI components
-
-### Additional Libraries
-- **tensorflow**: Deep learning (optional)
-- **backtrader**: Backtesting framework
-- **scipy**: Scientific computing
-- **requests**: HTTP library
-
-See [requirements.txt](requirements.txt) for complete dependency list.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Yahoo Finance for providing free market data
-- The open-source community for excellent libraries
-- Contributors who help improve the system
+- Data: yfinance (1-min, max 7 days) until real-time feed integrated
+- Position sizing: 20-30% of capital per trade
+- Minimum hold: 3 candles before checking exit
+- Transaction costs: ₹20 brokerage + STT (0.025%) + slippage (0.03%)
+- Target instrument: BANKNIFTY futures (after Zerodha WebSocket integration)
 
 ## Disclaimer
 
-This software is for educational and research purposes only. It is not intended as financial advice. Trading stocks involves risk, and you should carefully consider your investment objectives and risk tolerance before making any investment decisions. Past performance does not guarantee future results.
+For educational and research purposes only. Not financial advice. Trading involves risk.
 
-## Contact
+## License
 
-- **[Repository](https://github.com/Vinayakp2001/Stock-AI)**
-- **[Issues](https://github.com/Vinayakp2001/Stock-AI/issues)**
-- **[Discussions](https://github.com/Vinayakp2001/Stock-AI/discussions)**
-
----
-
-**Built with Python and Machine Learning for the Future of Algorithmic Trading**
+MIT — see [LICENSE](LICENSE)
